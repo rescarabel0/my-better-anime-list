@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.4](https://github.com/rescarabel0/my-better-anime-list/compare/v0.0.3...v0.0.4) (2026-04-07)
+
+
+### Bug Fixes
+
+* add cursor-pointer to SelectItem ([c10355b](https://github.com/rescarabel0/my-better-anime-list/commit/c10355b356d58b7adb26fb0c7eae1b3ef24def6f))
+* move checkbox outside overflow-hidden container so it renders visibly ([a118f73](https://github.com/rescarabel0/my-better-anime-list/commit/a118f73867160ff06b4b2196a0c51ff7d650f6bc))
+
 ### [0.0.3](https://github.com/rescarabel0/my-better-anime-list/compare/v0.0.2...v0.0.3) (2026-04-07)
 
 
