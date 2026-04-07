@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.6](https://github.com/rescarabel0/my-better-anime-list/compare/v0.0.5...v0.0.6) (2026-04-07)
+
+
+### Features
+
+* add multi-genre filter via drawer with apply/clear actions ([71d1801](https://github.com/rescarabel0/my-better-anime-list/commit/71d1801732d7d92edddba64ce1e75862b23ebc2b))
+
 ### [0.0.5](https://github.com/rescarabel0/my-better-anime-list/compare/v0.0.4...v0.0.5) (2026-04-07)
 
 
