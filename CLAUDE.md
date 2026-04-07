@@ -18,9 +18,8 @@
    - Debug code (`console.log`, `debugger`, etc.) left behind.
    - Unused imports or dead code introduced by the change.
 3. Only stage files relevant to the current change — avoid `git add .` or `git add -A`.
-4. Do NOT push to remote unless the user explicitly asks.
+4. After committing, always run `pnpm release` and `git push --follow-tags origin main`.
 
 ## Releases
 - The project uses `standard-version` for semantic versioning.
-- To create a release: `pnpm release` then `git push --follow-tags origin main`.
-- Only run releases when the user asks.
+- Always run a release (`pnpm release`) and push (`git push --follow-tags origin main`) after each commit.
