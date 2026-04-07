@@ -1,73 +1,63 @@
-# React + TypeScript + Vite
+# My Better Anime List
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicação web para explorar e descobrir animes, consumindo a [Jikan API](https://jikan.moe/) (API não-oficial do MyAnimeList).
 
-Currently, two official plugins are available:
+## Funcionalidades
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Busca de animes** com debounce
+- **Ordenação** por score, popularidade, rank, título, episódios e favoritos
+- **Infinite scroll** para carregamento contínuo
+- **Alternância de exibição** entre grid (thumbnails) e lista
+- **Página de detalhes** com sinopse, gêneros, estúdio, episódios, etc.
+- **Tema claro/escuro**
+- **Internacionalização** (Português e Inglês)
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **React 19** + **TypeScript**
+- **Vite** — bundler
+- **TanStack Router** — roteamento file-based
+- **TanStack React Query** — gerenciamento de estado do servidor
+- **shadcn/ui** (com **Base UI**) — componentes de UI
+- **Tailwind CSS 4** — estilização
+- **react-i18next** — internacionalização
+- **Lucide React** — ícones
+- **standard-version** — versionamento semântico automático
 
-## Expanding the ESLint configuration
+## Como rodar
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+```bash
+# Instalar dependências
+pnpm install
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+# Rodar em desenvolvimento
+pnpm dev
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+# Build de produção
+pnpm build
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Preview do build
+pnpm preview
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Releases
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+O projeto usa [Conventional Commits](https://www.conventionalcommits.org/) e [standard-version](https://github.com/conventional-changelog/standard-version) para versionamento automático.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+# Criar uma nova release (analisa commits e bumpa a versão)
+pnpm release
+
+# Enviar com tags
+git push --follow-tags origin main
 ```
+
+| Tipo de commit | Bump de versão |
+|---|---|
+| `fix:` | patch (0.0.x) |
+| `feat:` | minor (0.x.0) |
+| `BREAKING CHANGE:` | major (x.0.0) |
+
+## API
+
+Dados fornecidos pela [Jikan API v4](https://docs.api.jikan.moe/), uma API REST gratuita e open-source para o MyAnimeList.
