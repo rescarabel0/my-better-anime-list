@@ -5,6 +5,7 @@ export interface AnimeGroupEntry {
   image_url: string
   score: number | null
   episodes: number | null
+  genres?: Array<{ mal_id: number; name: string }>
 }
 
 export interface AnimeGroup {

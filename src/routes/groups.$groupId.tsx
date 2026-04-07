@@ -1,16 +1,55 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LayoutGrid, List, X, Check } from 'lucide-react'
+import { LayoutGrid, List, X, Check, SlidersHorizontal } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button, buttonVariants } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Sheet,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
 import { useGroups, useSelection } from '@/contexts/GroupsContext'
 import { SelectionActionBar } from '@/components/SelectionActionBar'
+import type { AnimeGroupEntry } from '@/types/groups'
 
 export const Route = createFileRoute('/groups/$groupId')({
   component: GroupPage,
 })
+
+const SORT_OPTIONS = [
+  { labelKey: 'home.sort.scoreDesc', value: 'score_desc' },
+  { labelKey: 'home.sort.scoreAsc', value: 'score_asc' },
+  { labelKey: 'home.sort.titleAsc', value: 'title_asc' },
+  { labelKey: 'home.sort.titleDesc', value: 'title_desc' },
+  { labelKey: 'home.sort.episodesDesc', value: 'episodes_desc' },
+  { labelKey: 'home.sort.episodesAsc', value: 'episodes_asc' },
+]
+
+function sortAnimes(animes: AnimeGroupEntry[], key: string): AnimeGroupEntry[] {
+  return [...animes].sort((a, b) => {
+    switch (key) {
+      case 'score_desc': return (b.score ?? 0) - (a.score ?? 0)
+      case 'score_asc': return (a.score ?? 0) - (b.score ?? 0)
+      case 'title_asc': return (a.title_english ?? a.title).localeCompare(b.title_english ?? b.title)
+      case 'title_desc': return (b.title_english ?? b.title).localeCompare(a.title_english ?? a.title)
+      case 'episodes_desc': return (b.episodes ?? 0) - (a.episodes ?? 0)
+      case 'episodes_asc': return (a.episodes ?? 0) - (b.episodes ?? 0)
+      default: return 0
+    }
+  })
+}
 
 function groupDisplayName(name: string, t: (key: string) => string): string {
   if (name === 'watched') return t('groups.watched')
@@ -26,6 +65,10 @@ function GroupPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
     return (localStorage.getItem('anime-view-mode') as 'grid' | 'list') || 'grid'
   })
+  const [sortKey, setSortKey] = useState('score_desc')
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const [genreIds, setGenreIds] = useState<number[]>([])
+  const [pendingGenreIds, setPendingGenreIds] = useState<number[]>([])
 
   const group = groups.find((g) => g.id === groupId)
 
@@ -33,6 +76,38 @@ function GroupPage() {
     const entry = animeCache[malId]
     if (entry) toggleSelect(entry)
   }, [toggleSelect, animeCache])
+
+  const rawAnimes = useMemo(
+    () => group?.animeIds.map((id) => animeCache[id]).filter(Boolean) ?? [],
+    [group, animeCache]
+  )
+
+  // Derive unique genres from the group's animes
+  const availableGenres = useMemo(() => {
+    const map = new Map<number, string>()
+    for (const anime of rawAnimes) {
+      for (const g of anime.genres ?? []) {
+        if (!map.has(g.mal_id)) map.set(g.mal_id, g.name)
+      }
+    }
+    return Array.from(map.entries())
+      .map(([mal_id, name]) => ({ mal_id, name }))
+      .sort((a, b) => a.name.localeCompare(b.name))
+  }, [rawAnimes])
+
+  const animes = useMemo(() => {
+    const filtered = genreIds.length > 0
+      ? rawAnimes.filter((a) => genreIds.every((id) => a.genres?.some((g) => g.mal_id === id)))
+      : rawAnimes
+    return sortAnimes(filtered, sortKey)
+  }, [rawAnimes, genreIds, sortKey])
+
+  const hasFilters = genreIds.length > 0
+  const activeGenres = availableGenres.filter((g) => genreIds.includes(g.mal_id))
+
+  function togglePending(id: number) {
+    setPendingGenreIds((prev) => prev.includes(id) ? prev.filter((g) => g !== id) : [...prev, id])
+  }
 
   if (!group) {
     return (
@@ -45,15 +120,13 @@ function GroupPage() {
     )
   }
 
-  const animes = group.animeIds.map((id) => animeCache[id]).filter(Boolean)
-
   return (
     <div className="flex flex-col gap-4 h-full">
-      <div className="flex items-center gap-3">
-        <h1 className="text-xl font-bold tracking-tight flex-1">
+      <div className="flex items-center gap-3 flex-wrap">
+        <h1 className="text-xl font-bold tracking-tight flex-1 min-w-0">
           {groupDisplayName(group.name, t)}
           <span className="text-muted-foreground font-normal text-sm ml-2">
-            ({animes.length})
+            ({animes.length}{rawAnimes.length !== animes.length ? `/${rawAnimes.length}` : ''})
           </span>
         </h1>
 
@@ -75,12 +148,136 @@ function GroupPage() {
             <List className="h-4 w-4" />
           </Button>
         </div>
+
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-muted-foreground whitespace-nowrap">{t('home.sortBy')}</label>
+          <Select value={sortKey} onValueChange={(val) => val && setSortKey(val)}>
+            <SelectTrigger className="w-44">
+              <SelectValue>
+                {t(SORT_OPTIONS.find((o) => o.value === sortKey)?.labelKey ?? '')}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent alignItemWithTrigger={false}>
+              {SORT_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {t(opt.labelKey)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {availableGenres.length > 0 && (
+          <Sheet
+            open={sheetOpen}
+            onOpenChange={(open) => {
+              if (open) setPendingGenreIds(genreIds)
+              setSheetOpen(open)
+            }}
+          >
+            <SheetTrigger
+              render={
+                <Button variant={hasFilters ? 'secondary' : 'outline'} className="relative shrink-0 gap-2" aria-label={t('home.filters')} />
+              }
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              {t('home.filters')}
+              {hasFilters && (
+                <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-primary" />
+              )}
+            </SheetTrigger>
+            <SheetContent side="right" className="w-80 flex flex-col gap-6">
+              <SheetHeader>
+                <SheetTitle>{t('home.filters')}</SheetTitle>
+              </SheetHeader>
+
+              <div className="flex flex-col gap-3 px-4 flex-1 overflow-y-auto">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">{t('home.genre')}</span>
+                  {pendingGenreIds.length > 0 && (
+                    <button
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                      onClick={() => setPendingGenreIds([])}
+                    >
+                      {t('home.clearFilter')}
+                    </button>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {availableGenres.map((genre) => (
+                    <Badge
+                      key={genre.mal_id}
+                      variant={pendingGenreIds.includes(genre.mal_id) ? 'default' : 'outline'}
+                      className="cursor-pointer select-none text-sm py-1 px-3 transition-colors hover:bg-accent hover:text-accent-foreground"
+                      onClick={() => togglePending(genre.mal_id)}
+                    >
+                      {genre.name}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              <SheetFooter className="px-4 pb-6">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="flex-1"
+                  onClick={() => {
+                    setPendingGenreIds([])
+                    setGenreIds([])
+                    setSheetOpen(false)
+                  }}
+                >
+                  {t('home.clearFilter')}
+                </Button>
+                <Button
+                  size="lg"
+                  className="flex-1"
+                  onClick={() => {
+                    setGenreIds(pendingGenreIds)
+                    setSheetOpen(false)
+                  }}
+                >
+                  {t('home.applyFilters')}
+                </Button>
+              </SheetFooter>
+            </SheetContent>
+          </Sheet>
+        )}
+
+        {hasFilters && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground hover:text-foreground shrink-0 gap-1.5"
+            onClick={() => setGenreIds([])}
+          >
+            {t('home.clearFilter')}
+          </Button>
+        )}
       </div>
+
+      {activeGenres.length > 0 && (
+        <div className="flex items-center gap-2 flex-wrap">
+          {activeGenres.map((genre) => (
+            <Badge key={genre.mal_id} variant="secondary" className="gap-1">
+              {genre.name}
+              <button
+                className="ml-1 hover:text-foreground text-muted-foreground transition-colors cursor-pointer"
+                onClick={() => setGenreIds((prev) => prev.filter((id) => id !== genre.mal_id))}
+                aria-label={`Remove ${genre.name} filter`}
+              >
+                ×
+              </button>
+            </Badge>
+          ))}
+        </div>
+      )}
 
       {animes.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center gap-2 text-muted-foreground">
-          <p className="text-sm">{t('groups.empty')}</p>
-          <p className="text-xs">{t('groups.emptyHint')}</p>
+          <p className="text-sm">{rawAnimes.length === 0 ? t('groups.empty') : t('home.noResults')}</p>
+          {rawAnimes.length === 0 && <p className="text-xs">{t('groups.emptyHint')}</p>}
         </div>
       ) : (
         <div className="flex-1 overflow-y-auto min-h-0 pr-3">
@@ -109,7 +306,7 @@ function GroupPage() {
 }
 
 interface GroupAnimeCardProps {
-  anime: { mal_id: number; title: string; title_english: string | null; image_url: string; score: number | null; episodes: number | null }
+  anime: AnimeGroupEntry
   variant: 'grid' | 'list'
   selected: boolean
   selectionMode?: boolean

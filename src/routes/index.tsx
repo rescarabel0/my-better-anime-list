@@ -139,6 +139,7 @@ function HomePage() {
       image_url: anime.images.jpg.image_url,
       score: anime.score,
       episodes: anime.episodes,
+      genres: anime.genres,
     })
   }, [toggleSelect])
 
@@ -237,6 +238,9 @@ function HomePage() {
           >
             <SlidersHorizontal className="h-4 w-4" />
             {t('home.filters')}
+            {hasFilters && (
+              <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-primary" />
+            )}
           </SheetTrigger>
           <SheetContent side="right" className="w-80 flex flex-col gap-6">
             <SheetHeader>
@@ -270,9 +274,10 @@ function HomePage() {
               </div>
             </div>
 
-            <SheetFooter className="px-4 pb-4">
+            <SheetFooter className="px-4 pb-6">
               <Button
                 variant="outline"
+                size="lg"
                 className="flex-1"
                 onClick={() => {
                   setPendingGenreIds([])
@@ -283,6 +288,7 @@ function HomePage() {
                 {t('home.clearFilter')}
               </Button>
               <Button
+                size="lg"
                 className="flex-1"
                 onClick={() => {
                   navigate({ search: (prev) => ({ ...prev, genres: pendingGenreIds }) })
