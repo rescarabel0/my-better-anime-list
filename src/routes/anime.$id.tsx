@@ -56,7 +56,7 @@ function AnimeDetailPage() {
     return (
       <div className="space-y-4">
         <p className="text-destructive text-sm">{t('detail.error')}</p>
-        <Link to="/" search={{ sort: 'score_desc', q: '' }}  className={buttonVariants({ variant: 'outline' })}>
+        <Link to="/" search={{ sort: 'score_desc', q: '', genres: [] }}  className={buttonVariants({ variant: 'outline' })}>
           {t('detail.back')}
         </Link>
       </div>
@@ -65,7 +65,7 @@ function AnimeDetailPage() {
 
   return (
     <div className="space-y-6">
-      <Link to="/" search={{ sort: 'score_desc', q: '' }}  className={buttonVariants({ variant: 'outline', size: 'sm' })}>
+      <Link to="/" search={{ sort: 'score_desc', q: '', genres: [] }}  className={buttonVariants({ variant: 'outline', size: 'sm' })}>
         {t('detail.backArrow')}
       </Link>
 

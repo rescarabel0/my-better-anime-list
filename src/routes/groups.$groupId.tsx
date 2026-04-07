@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LayoutGrid, List, X } from 'lucide-react'
+import { LayoutGrid, List, X, Check } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -38,7 +38,7 @@ function GroupPage() {
     return (
       <div className="space-y-4">
         <p className="text-destructive text-sm">{t('groups.empty')}</p>
-        <Link to="/" search={{ sort: 'score_desc', q: '' }} className={buttonVariants({ variant: 'outline' })}>
+        <Link to="/" search={{ sort: 'score_desc', q: '', genres: [] }} className={buttonVariants({ variant: 'outline' })}>
           {t('detail.backArrow')}
         </Link>
       </div>
@@ -94,6 +94,7 @@ function GroupPage() {
                 anime={anime}
                 variant={viewMode}
                 selected={selected.has(anime.mal_id)}
+                selectionMode={selected.size > 0}
                 onToggleSelect={() => handleToggleSelect(anime.mal_id)}
                 onRemove={() => removeAnimeFromGroup(groupId, anime.mal_id)}
               />
@@ -111,13 +112,15 @@ interface GroupAnimeCardProps {
   anime: { mal_id: number; title: string; title_english: string | null; image_url: string; score: number | null; episodes: number | null }
   variant: 'grid' | 'list'
   selected: boolean
+  selectionMode?: boolean
   onToggleSelect: () => void
   onRemove: () => void
 }
 
-function GroupAnimeCard({ anime, variant, selected, onToggleSelect, onRemove }: GroupAnimeCardProps) {
+function GroupAnimeCard({ anime, variant, selected, selectionMode, onToggleSelect, onRemove }: GroupAnimeCardProps) {
   const title = anime.title_english ?? anime.title
   const subtitle = anime.title_english ? anime.title : null
+  const checkboxVisible = selectionMode || selected
 
   const handleCheckboxClick = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -131,35 +134,81 @@ function GroupAnimeCard({ anime, variant, selected, onToggleSelect, onRemove }: 
     onRemove()
   }
 
+  const handleLinkClick = (e: React.MouseEvent) => {
+    if (selectionMode) {
+      e.preventDefault()
+      onToggleSelect()
+    }
+  }
+
   const checkbox = (
     <div
-      className={`absolute top-1.5 left-1.5 z-10 transition-opacity ${selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+      className={`absolute top-2 left-2 z-20 transition-opacity cursor-pointer ${checkboxVisible ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
       onClick={handleCheckboxClick}
     >
-      <div className={`size-4 shrink-0 rounded-sm border border-input bg-background/80 backdrop-blur-sm shadow-xs flex items-center justify-center ${selected ? 'border-primary bg-primary text-primary-foreground' : ''}`}>
-        {selected && <span className="text-xs">&#10003;</span>}
+      <div className={`size-6 rounded-md border-2 flex items-center justify-center backdrop-blur-sm transition-colors ${selected ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/60 bg-background/80'}`}>
+        {selected && <Check className="size-4" strokeWidth={3} />}
       </div>
     </div>
   )
 
   const removeButton = (
     <div
-      className="absolute top-1.5 right-1.5 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+      className="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
       onClick={handleRemoveClick}
     >
-      <div className="size-5 rounded-full bg-destructive/90 text-destructive-foreground flex items-center justify-center backdrop-blur-sm">
-        <X className="h-3 w-3" />
+      <div className="size-6 rounded-full bg-destructive/90 text-destructive-foreground flex items-center justify-center backdrop-blur-sm">
+        <X className="h-3.5 w-3.5" />
       </div>
     </div>
   )
 
   if (variant === 'list') {
     return (
-      <Link to="/anime/$id" params={{ id: String(anime.mal_id) }}>
-        <Card className={`overflow-hidden hover:shadow-md transition-shadow cursor-pointer group py-0 gap-0 flex-row h-28 ${selected ? 'ring-2 ring-primary' : ''}`}>
-          <div className="relative w-20 shrink-0 overflow-hidden bg-muted">
-            {checkbox}
-            {removeButton}
+      <div className="relative group">
+        {checkbox}
+        {removeButton}
+        <Link to="/anime/$id" params={{ id: String(anime.mal_id) }} onClick={handleLinkClick}>
+          <Card className={`overflow-hidden hover:shadow-md transition-shadow cursor-pointer py-0 gap-0 flex-row h-28 ${selected ? 'ring-2 ring-primary' : ''}`}>
+            <div className="w-20 shrink-0 overflow-hidden bg-muted">
+              <img
+                src={anime.image_url}
+                alt={title}
+                loading="lazy"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+            <CardContent className="p-3 flex flex-col justify-center gap-1 min-w-0">
+              <h3 className="font-medium text-sm leading-tight line-clamp-1">{title}</h3>
+              {subtitle && (
+                <p className="text-xs text-muted-foreground line-clamp-1">{subtitle}</p>
+              )}
+              <div className="flex flex-wrap gap-1">
+                {anime.score && (
+                  <Badge variant="secondary" className="text-xs">
+                    ⭐ {anime.score}
+                  </Badge>
+                )}
+                {anime.episodes && (
+                  <Badge variant="outline" className="text-xs">
+                    {anime.episodes} eps
+                  </Badge>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+      </div>
+    )
+  }
+
+  return (
+    <div className="relative group">
+      {checkbox}
+      {removeButton}
+      <Link to="/anime/$id" params={{ id: String(anime.mal_id) }} onClick={handleLinkClick}>
+        <Card className={`overflow-hidden h-full hover:shadow-md transition-shadow cursor-pointer pt-0 gap-0 ${selected ? 'ring-2 ring-primary' : ''}`}>
+          <div className="aspect-[2/3] overflow-hidden bg-muted">
             <img
               src={anime.image_url}
               alt={title}
@@ -167,12 +216,12 @@ function GroupAnimeCard({ anime, variant, selected, onToggleSelect, onRemove }: 
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           </div>
-          <CardContent className="p-3 flex flex-col justify-center gap-1 min-w-0">
-            <h3 className="font-medium text-sm leading-tight line-clamp-1">{title}</h3>
+          <CardContent className="p-3 space-y-1">
+            <h3 className="font-medium text-sm leading-tight line-clamp-2">{title}</h3>
             {subtitle && (
               <p className="text-xs text-muted-foreground line-clamp-1">{subtitle}</p>
             )}
-            <div className="flex flex-wrap gap-1">
+            <div className="flex flex-wrap gap-1 pt-1">
               {anime.score && (
                 <Badge variant="secondary" className="text-xs">
                   ⭐ {anime.score}
@@ -187,41 +236,6 @@ function GroupAnimeCard({ anime, variant, selected, onToggleSelect, onRemove }: 
           </CardContent>
         </Card>
       </Link>
-    )
-  }
-
-  return (
-    <Link to="/anime/$id" params={{ id: String(anime.mal_id) }}>
-      <Card className={`overflow-hidden h-full hover:shadow-md transition-shadow cursor-pointer group pt-0 gap-0 ${selected ? 'ring-2 ring-primary' : ''}`}>
-        <div className="relative aspect-[2/3] overflow-hidden bg-muted">
-          {checkbox}
-          {removeButton}
-          <img
-            src={anime.image_url}
-            alt={title}
-            loading="lazy"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        </div>
-        <CardContent className="p-3 space-y-1">
-          <h3 className="font-medium text-sm leading-tight line-clamp-2">{title}</h3>
-          {subtitle && (
-            <p className="text-xs text-muted-foreground line-clamp-1">{subtitle}</p>
-          )}
-          <div className="flex flex-wrap gap-1 pt-1">
-            {anime.score && (
-              <Badge variant="secondary" className="text-xs">
-                ⭐ {anime.score}
-              </Badge>
-            )}
-            {anime.episodes && (
-              <Badge variant="outline" className="text-xs">
-                {anime.episodes} eps
-              </Badge>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </Link>
+    </div>
   )
 }
