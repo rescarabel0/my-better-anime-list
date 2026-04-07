@@ -1,0 +1,48 @@
+{
+  "nav": {
+    "topAnimes": "Top Animes",
+    "brand": "AnimeList"
+  },
+  "theme": {
+    "toggle": "Toggle theme",
+    "light": "Light theme",
+    "dark": "Dark theme"
+  },
+  "home": {
+    "searchPlaceholder": "Search animes...",
+    "sortBy": "Sort by:",
+    "noResults": "— No results found.",
+    "view": {
+      "grid": "Grid view",
+      "list": "List view"
+    },
+    "error": "Failed to load animes. Try again.",
+    "sort": {
+      "scoreDesc": "Score (highest)",
+      "scoreAsc": "Score (lowest)",
+      "popularity": "Popularity",
+      "rank": "Rank",
+      "titleAsc": "Title (A-Z)",
+      "titleDesc": "Title (Z-A)",
+      "episodesDesc": "Episodes (most)",
+      "episodesAsc": "Episodes (least)",
+      "favorites": "Favorites"
+    }
+  },
+  "detail": {
+    "error": "Failed to load anime.",
+    "back": "Back",
+    "backArrow": "← Back",
+    "episodes": "episodes",
+    "studio": "Studio",
+    "aired": "Aired",
+    "ratings": "Ratings",
+    "popularity": "Popularity",
+    "synopsis": "Synopsis"
+  },
+  "language": {
+    "label": "Language",
+    "pt": "Português",
+    "en": "English"
+  }
+}
