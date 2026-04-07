@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.3](https://github.com/rescarabel0/my-better-anime-list/compare/v0.0.2...v0.0.3) (2026-04-07)
+
+
+### Features
+
+* add anime collections with multi-select and group management ([9b0247a](https://github.com/rescarabel0/my-better-anime-list/commit/9b0247abf2610c9b34601c3a66b2f0ea0ad552c9))
+
 ### [0.0.2](https://github.com/rescarabel0/my-better-anime-list/compare/v0.0.1...v0.0.2) (2026-04-07)
 
 ### [0.0.1](https://github.com/rescarabel0/my-better-anime-list/compare/v0.0.0...v0.0.1) (2026-04-07)
