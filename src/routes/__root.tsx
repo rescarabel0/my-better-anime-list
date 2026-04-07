@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { GroupSidebar } from '@/components/GroupSidebar'
+import { Separator } from '@/components/ui/separator'
 import { TrendingUp } from 'lucide-react'
 
 export const Route = createRootRoute({
@@ -21,7 +23,7 @@ function RootLayout() {
           </Link>
         </div>
 
-        <nav className="flex-1 flex flex-col gap-1 p-3 text-sm">
+        <nav className="flex-1 flex flex-col gap-1 p-3 text-sm overflow-y-auto">
           <Link
             to="/"
             search={{ sort: 'score_desc', q: '' }}
@@ -30,6 +32,10 @@ function RootLayout() {
             <TrendingUp className="h-4 w-4" />
             {t('nav.topAnimes')}
           </Link>
+
+          <Separator className="my-2" />
+
+          <GroupSidebar />
         </nav>
 
         <div className="border-t p-3 flex flex-col gap-2">

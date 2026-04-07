@@ -1,7 +1,8 @@
 {
   "nav": {
     "topAnimes": "Top Animes",
-    "brand": "AnimeList"
+    "brand": "AnimeList",
+    "collections": "Coleções"
   },
   "theme": {
     "toggle": "Alternar tema",
@@ -38,11 +39,35 @@
     "aired": "Exibição",
     "ratings": "Avaliações",
     "popularity": "Popularidade",
-    "synopsis": "Sinopse"
+    "synopsis": "Sinopse",
+    "addToCollection": "Adicionar à coleção"
   },
   "language": {
     "label": "Idioma",
     "pt": "Português",
     "en": "English"
+  },
+  "groups": {
+    "watched": "Assistidos",
+    "wantToWatch": "Quero Assistir",
+    "createGroup": "Criar coleção",
+    "groupName": "Nome da coleção",
+    "groupNamePlaceholder": "ex: Favoritos, Maratona...",
+    "create": "Criar",
+    "cancel": "Cancelar",
+    "rename": "Renomear",
+    "delete": "Excluir",
+    "deleteConfirm": "Excluir \"{{name}}\"? Essa ação não pode ser desfeita.",
+    "empty": "Nenhum anime nesta coleção ainda.",
+    "emptyHint": "Selecione animes da lista e adicione aqui.",
+    "removeFromGroup": "Remover da coleção",
+    "addToGroup": "Adicionar à coleção",
+    "newGroup": "Nova coleção...",
+    "confirmDelete": "Confirmar"
+  },
+  "selection": {
+    "selected": "{{count}} selecionado(s)",
+    "clearSelection": "Limpar",
+    "addToGroup": "Adicionar à coleção"
   }
 }

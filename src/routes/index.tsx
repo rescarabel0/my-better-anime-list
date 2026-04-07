@@ -4,6 +4,7 @@ import { useEffect, useRef, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AnimeCard } from '@/components/AnimeCard'
 import { AnimeCardSkeleton } from '@/components/AnimeCardSkeleton'
+import { SelectionActionBar } from '@/components/SelectionActionBar'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -16,6 +17,8 @@ import { getTopAnime, searchAnime } from '@/services/jikan'
 import type { SortOption } from '@/services/jikan'
 import { Button } from '@/components/ui/button'
 import { LayoutGrid, List, Loader2, Search } from 'lucide-react'
+import { useSelection } from '@/contexts/GroupsContext'
+import type { Anime } from '@/types/anime'
 
 const SORT_OPTIONS: { labelKey: string; value: string; order_by: string; sort: 'asc' | 'desc' }[] = [
   { labelKey: 'home.sort.scoreDesc', value: 'score_desc', order_by: 'score', sort: 'desc' },
@@ -43,6 +46,7 @@ function HomePage() {
   const { t } = useTranslation()
   const { sort: sortKey, q: searchQuery } = Route.useSearch()
   const navigate = useNavigate({ from: '/' })
+  const { selected, toggleSelect } = useSelection()
   const [inputValue, setInputValue] = useState(searchQuery)
   const [query, setQuery] = useState(searchQuery)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
@@ -102,6 +106,17 @@ function HomePage() {
     })
   })()
   const loading = active.isLoading || (active.isFetching && !active.isFetchingNextPage)
+
+  const handleToggleSelect = useCallback((anime: Anime) => {
+    toggleSelect({
+      mal_id: anime.mal_id,
+      title: anime.title,
+      title_english: anime.title_english,
+      image_url: anime.images.jpg.image_url,
+      score: anime.score,
+      episodes: anime.episodes,
+    })
+  }, [toggleSelect])
 
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const sentinelRef = useRef<HTMLDivElement>(null)
@@ -192,12 +207,20 @@ function HomePage() {
 
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto min-h-0 pr-3">
         <div className={viewMode === 'grid'
-          ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"
+          ? "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3"
           : "flex flex-col gap-3"
         }>
           {loading
             ? Array.from({ length: 24 }).map((_, i) => <AnimeCardSkeleton key={i} variant={viewMode} />)
-            : animes.map((anime) => <AnimeCard key={anime.mal_id} anime={anime} variant={viewMode} />)}
+            : animes.map((anime) => (
+              <AnimeCard
+                key={anime.mal_id}
+                anime={anime}
+                variant={viewMode}
+                selected={selected.has(anime.mal_id)}
+                onToggleSelect={handleToggleSelect}
+              />
+            ))}
         </div>
 
         <div ref={sentinelRef} className="flex justify-center py-4">
@@ -206,6 +229,8 @@ function HomePage() {
           )}
         </div>
       </div>
+
+      <SelectionActionBar />
     </div>
   )
 }

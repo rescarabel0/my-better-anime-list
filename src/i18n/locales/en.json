@@ -1,7 +1,8 @@
 {
   "nav": {
     "topAnimes": "Top Animes",
-    "brand": "AnimeList"
+    "brand": "AnimeList",
+    "collections": "Collections"
   },
   "theme": {
     "toggle": "Toggle theme",
@@ -38,11 +39,35 @@
     "aired": "Aired",
     "ratings": "Ratings",
     "popularity": "Popularity",
-    "synopsis": "Synopsis"
+    "synopsis": "Synopsis",
+    "addToCollection": "Add to collection"
   },
   "language": {
     "label": "Language",
     "pt": "Português",
     "en": "English"
+  },
+  "groups": {
+    "watched": "Watched",
+    "wantToWatch": "Want to Watch",
+    "createGroup": "Create collection",
+    "groupName": "Collection name",
+    "groupNamePlaceholder": "e.g., Favorites, Weekend Binge...",
+    "create": "Create",
+    "cancel": "Cancel",
+    "rename": "Rename",
+    "delete": "Delete",
+    "deleteConfirm": "Delete \"{{name}}\"? This cannot be undone.",
+    "empty": "No animes in this collection yet.",
+    "emptyHint": "Select animes from the list and add them here.",
+    "removeFromGroup": "Remove from collection",
+    "addToGroup": "Add to collection",
+    "newGroup": "New collection...",
+    "confirmDelete": "Confirm"
+  },
+  "selection": {
+    "selected": "{{count}} selected",
+    "clearSelection": "Clear",
+    "addToGroup": "Add to collection"
   }
 }

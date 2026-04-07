@@ -1,18 +1,37 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { FolderPlus, Plus, Check } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { buttonVariants } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu'
 import { getAnimeById } from '@/services/jikan'
+import { useGroups } from '@/contexts/GroupsContext'
+import { CreateGroupDialog } from '@/components/CreateGroupDialog'
 
 export const Route = createFileRoute('/anime/$id')({
   component: AnimeDetailPage,
 })
 
+function groupDisplayName(name: string, t: (key: string) => string): string {
+  if (name === 'watched') return t('groups.watched')
+  if (name === 'wantToWatch') return t('groups.wantToWatch')
+  return name
+}
+
 function AnimeDetailPage() {
   const { t } = useTranslation()
   const { id } = Route.useParams()
+  const { groups, addAnimesToGroup } = useGroups()
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['anime', id],
@@ -20,6 +39,18 @@ function AnimeDetailPage() {
   })
 
   const anime = data?.data
+
+  const handleAddToGroup = (groupId: string) => {
+    if (!anime) return
+    addAnimesToGroup(groupId, [{
+      mal_id: anime.mal_id,
+      title: anime.title,
+      title_english: anime.title_english,
+      image_url: anime.images.jpg.image_url,
+      score: anime.score,
+      episodes: anime.episodes,
+    }])
+  }
 
   if (isError) {
     return (
@@ -69,7 +100,7 @@ function AnimeDetailPage() {
               )}
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {anime.score && (
                 <Badge variant="secondary">⭐ {anime.score}</Badge>
               )}
@@ -80,6 +111,32 @@ function AnimeDetailPage() {
                 <Badge variant="outline">{anime.episodes} {t('detail.episodes')}</Badge>
               )}
               <Badge variant="outline">{anime.status}</Badge>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger render={<Button variant="outline" size="sm" />}>
+                  <FolderPlus className="h-4 w-4" />
+                  {t('detail.addToCollection')}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  {groups.map((group) => {
+                    const isInGroup = group.animeIds.includes(anime.mal_id)
+                    return (
+                      <DropdownMenuItem
+                        key={group.id}
+                        onClick={() => handleAddToGroup(group.id)}
+                      >
+                        {isInGroup && <Check className="h-4 w-4" />}
+                        {groupDisplayName(group.name, t)}
+                      </DropdownMenuItem>
+                    )
+                  })}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setCreateDialogOpen(true)}>
+                    <Plus className="h-4 w-4" />
+                    {t('groups.newGroup')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
             {anime.genres.length > 0 && (
@@ -130,6 +187,15 @@ function AnimeDetailPage() {
           </div>
         </div>
       ) : null}
+
+      <CreateGroupDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onCreated={(name) => {
+          const group = groups.find((g) => g.name === name)
+          if (group) handleAddToGroup(group.id)
+        }}
+      />
     </div>
   )
 }
