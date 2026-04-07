@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.9](https://github.com/rescarabel0/my-better-anime-list/compare/v0.0.8...v0.0.9) (2026-04-07)
+
+
+### Features
+
+* add SFW mode toggle to filter adult content ([7e003b6](https://github.com/rescarabel0/my-better-anime-list/commit/7e003b604d8808ac19d936156d34883e4e25f593))
+
 ### [0.0.8](https://github.com/rescarabel0/my-better-anime-list/compare/v0.0.7...v0.0.8) (2026-04-07)
 
 
