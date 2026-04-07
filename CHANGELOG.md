@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.8](https://github.com/rescarabel0/my-better-anime-list/compare/v0.0.7...v0.0.8) (2026-04-07)
+
+
+### Features
+
+* add mobile responsiveness ([2298f3a](https://github.com/rescarabel0/my-better-anime-list/commit/2298f3a2d732a31376093ead8236a4f96a1fe19b))
+
 ### [0.0.7](https://github.com/rescarabel0/my-better-anime-list/compare/v0.0.6...v0.0.7) (2026-04-07)
 
 
