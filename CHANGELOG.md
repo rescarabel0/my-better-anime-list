@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.7](https://github.com/rescarabel0/my-better-anime-list/compare/v0.0.6...v0.0.7) (2026-04-07)
+
+
+### Features
+
+* add sort and genre filter to anime groups page ([5edc683](https://github.com/rescarabel0/my-better-anime-list/commit/5edc68309476a7790a97bd12669108eb472e36d2))
+
 ### [0.0.6](https://github.com/rescarabel0/my-better-anime-list/compare/v0.0.5...v0.0.6) (2026-04-07)
 
 
