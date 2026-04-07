@@ -194,23 +194,13 @@ function GroupPage() {
               </SheetHeader>
 
               <div className="flex flex-col gap-3 px-4 flex-1 overflow-y-auto">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">{t('home.genre')}</span>
-                  {pendingGenreIds.length > 0 && (
-                    <button
-                      className="text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                      onClick={() => setPendingGenreIds([])}
-                    >
-                      {t('home.clearFilter')}
-                    </button>
-                  )}
-                </div>
+                <span className="text-sm font-medium">{t('home.genre')}</span>
                 <div className="flex flex-wrap gap-2">
                   {availableGenres.map((genre) => (
                     <Badge
                       key={genre.mal_id}
                       variant={pendingGenreIds.includes(genre.mal_id) ? 'default' : 'outline'}
-                      className="cursor-pointer select-none text-sm py-1 px-3 transition-colors hover:bg-accent hover:text-accent-foreground"
+                      className="cursor-pointer select-none text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
                       onClick={() => togglePending(genre.mal_id)}
                     >
                       {genre.name}
@@ -223,7 +213,7 @@ function GroupPage() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="flex-1"
+                  className="flex-1 h-11"
                   onClick={() => {
                     setPendingGenreIds([])
                     setGenreIds([])
@@ -234,7 +224,7 @@ function GroupPage() {
                 </Button>
                 <Button
                   size="lg"
-                  className="flex-1"
+                  className="flex-1 h-11"
                   onClick={() => {
                     setGenreIds(pendingGenreIds)
                     setSheetOpen(false)
@@ -247,22 +237,12 @@ function GroupPage() {
           </Sheet>
         )}
 
-        {hasFilters && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-muted-foreground hover:text-foreground shrink-0 gap-1.5"
-            onClick={() => setGenreIds([])}
-          >
-            {t('home.clearFilter')}
-          </Button>
-        )}
       </div>
 
       {activeGenres.length > 0 && (
         <div className="flex items-center gap-2 flex-wrap">
           {activeGenres.map((genre) => (
-            <Badge key={genre.mal_id} variant="secondary" className="gap-1">
+            <Badge key={genre.mal_id} variant="secondary" className="gap-1 text-sm">
               {genre.name}
               <button
                 className="ml-1 hover:text-foreground text-muted-foreground transition-colors cursor-pointer"
@@ -273,6 +253,12 @@ function GroupPage() {
               </button>
             </Badge>
           ))}
+          <button
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            onClick={() => setGenreIds([])}
+          >
+            {t('home.clearFilter')}
+          </button>
         </div>
       )}
 
