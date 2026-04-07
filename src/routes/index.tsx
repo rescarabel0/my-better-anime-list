@@ -25,7 +25,8 @@ import { getTopAnime, searchAnime, getGenres } from '@/services/jikan'
 import type { SortOption } from '@/services/jikan'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { LayoutGrid, List, Loader2, Search, SlidersHorizontal } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
+import { LayoutGrid, List, Loader2, Search, ShieldCheck, SlidersHorizontal } from 'lucide-react'
 import { useSelection } from '@/contexts/GroupsContext'
 import type { Anime } from '@/types/anime'
 
@@ -67,6 +68,7 @@ function HomePage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
     return (localStorage.getItem('anime-view-mode') as 'grid' | 'list') || 'grid'
   })
+  const [sfwMode, setSfwMode] = useState(() => localStorage.getItem('anime-sfw-mode') !== 'false')
   const [sheetOpen, setSheetOpen] = useState(false)
   const [pendingGenreIds, setPendingGenreIds] = useState<number[]>(genreIds)
 
@@ -89,11 +91,11 @@ function HomePage() {
   const isSearching = query.length > 0
 
   const topAnime = useInfiniteQuery({
-    queryKey: ['top-anime', sortKey, genreIds] as const,
+    queryKey: ['top-anime', sortKey, genreIds, sfwMode] as const,
     queryFn: ({ pageParam }) => {
       const opt = SORT_OPTIONS.find((o) => o.value === sortKey)
       const sort = opt ? { order_by: opt.order_by, sort: opt.sort } as SortOption : undefined
-      return getTopAnime(pageParam, sort, genreIds)
+      return getTopAnime(pageParam, sort, genreIds, sfwMode)
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
@@ -105,11 +107,11 @@ function HomePage() {
   })
 
   const searchResult = useInfiniteQuery({
-    queryKey: ['search-anime', query, sortKey, genreIds] as const,
+    queryKey: ['search-anime', query, sortKey, genreIds, sfwMode] as const,
     queryFn: ({ pageParam }) => {
       const opt = SORT_OPTIONS.find((o) => o.value === sortKey)
       const sort = opt ? { order_by: opt.order_by, sort: opt.sort } as SortOption : undefined
-      return searchAnime(query, pageParam, sort, genreIds)
+      return searchAnime(query, pageParam, sort, genreIds, sfwMode)
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
@@ -315,6 +317,21 @@ function HomePage() {
             {t('home.clearFilter')}
           </Button>
         )}
+
+        <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+          <ShieldCheck className="h-4 w-4 text-muted-foreground" />
+          <label htmlFor="sfw-toggle" className="text-sm text-muted-foreground whitespace-nowrap cursor-pointer select-none">
+            {t('home.safeMode')}
+          </label>
+          <Switch
+            id="sfw-toggle"
+            checked={sfwMode}
+            onCheckedChange={(checked) => {
+              setSfwMode(checked)
+              localStorage.setItem('anime-sfw-mode', String(checked))
+            }}
+          />
+        </div>
       </div>
 
       <div className="flex items-center gap-2 flex-wrap">

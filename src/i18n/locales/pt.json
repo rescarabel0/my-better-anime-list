@@ -18,6 +18,11 @@
       "list": "Exibição em lista"
     },
     "error": "Erro ao carregar animes. Tente novamente.",
+    "filters": "Filtros",
+    "genre": "Gênero",
+    "clearFilter": "Limpar",
+    "applyFilters": "Aplicar",
+    "safeMode": "SFW",
     "sort": {
       "scoreDesc": "Score (maior)",
       "scoreAsc": "Score (menor)",

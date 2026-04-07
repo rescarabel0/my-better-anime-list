@@ -18,6 +18,11 @@
       "list": "List view"
     },
     "error": "Failed to load animes. Try again.",
+    "filters": "Filters",
+    "genre": "Genre",
+    "clearFilter": "Clear",
+    "applyFilters": "Apply",
+    "safeMode": "SFW",
     "sort": {
       "scoreDesc": "Score (highest)",
       "scoreAsc": "Score (lowest)",

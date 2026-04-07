@@ -13,25 +13,27 @@ export async function getGenres(): Promise<JikanResponse<Genre[]>> {
   return res.json()
 }
 
-export async function getTopAnime(page = 1, sortOption?: SortOption, genreIds?: number[]): Promise<JikanResponse<Anime[]>> {
+export async function getTopAnime(page = 1, sortOption?: SortOption, genreIds?: number[], sfw?: boolean): Promise<JikanResponse<Anime[]>> {
   const params = new URLSearchParams({ page: String(page) })
   if (sortOption) {
     params.set('order_by', sortOption.order_by)
     params.set('sort', sortOption.sort)
   }
   if (genreIds?.length) params.set('genres', genreIds.join(','))
+  if (sfw) params.set('sfw', 'true')
   const res = await fetch(`${BASE_URL}/anime?${params}`)
   if (!res.ok) throw new Error('Failed to fetch top anime')
   return res.json()
 }
 
-export async function searchAnime(query: string, page = 1, sortOption?: SortOption, genreIds?: number[]): Promise<JikanResponse<Anime[]>> {
-  const params = new URLSearchParams({ q: query, page: String(page), sfw: 'true' })
+export async function searchAnime(query: string, page = 1, sortOption?: SortOption, genreIds?: number[], sfw?: boolean): Promise<JikanResponse<Anime[]>> {
+  const params = new URLSearchParams({ q: query, page: String(page) })
   if (sortOption) {
     params.set('order_by', sortOption.order_by)
     params.set('sort', sortOption.sort)
   }
   if (genreIds?.length) params.set('genres', genreIds.join(','))
+  if (sfw) params.set('sfw', 'true')
   const res = await fetch(`${BASE_URL}/anime?${params}`)
   if (!res.ok) throw new Error('Failed to search anime')
   return res.json()
