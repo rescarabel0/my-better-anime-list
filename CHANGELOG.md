@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.5](https://github.com/rescarabel0/my-better-anime-list/compare/v0.0.4...v0.0.5) (2026-04-07)
+
+
+### Features
+
+* add logo, update favicon and site title to MyBetterAnimeList ([563b861](https://github.com/rescarabel0/my-better-anime-list/commit/563b861d5ad51ed065d380a7f1962d6e9ac3c6e7))
+
 ### [0.0.4](https://github.com/rescarabel0/my-better-anime-list/compare/v0.0.3...v0.0.4) (2026-04-07)
 
 
