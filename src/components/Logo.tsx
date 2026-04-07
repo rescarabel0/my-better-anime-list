@@ -1,0 +1,35 @@
+interface LogoProps {
+  className?: string
+}
+
+export function Logo({ className }: LogoProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 32 32"
+      className={className}
+      aria-hidden="true"
+    >
+      {/* Background rounded square */}
+      <rect width="32" height="32" rx="7" fill="#7c3aed" />
+      {/* Eye whites (anime almond shape) */}
+      <path d="M3.5 16 C7 8.5 25 8.5 28.5 16 C25 23.5 7 23.5 3.5 16Z" fill="white" />
+      {/* Iris */}
+      <circle cx="16" cy="16" r="5.5" fill="#4c1d95" />
+      {/* Pupil */}
+      <circle cx="16" cy="16" r="2.8" fill="#0f0028" />
+      {/* Main highlight (large, top-left) */}
+      <circle cx="13" cy="13.5" r="2" fill="white" />
+      {/* Secondary highlight (small, right) */}
+      <ellipse cx="19" cy="16.5" rx="1" ry="0.8" fill="white" opacity="0.55" />
+      {/* Eyelash top line */}
+      <path
+        d="M3.5 16 C7 8.5 25 8.5 28.5 16"
+        fill="none"
+        stroke="#0f0028"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
