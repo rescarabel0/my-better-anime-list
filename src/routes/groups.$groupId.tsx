@@ -122,15 +122,17 @@ function GroupPage() {
 
   return (
     <div className="flex flex-col gap-4 h-full">
-      <div className="flex items-center gap-3 flex-wrap">
-        <h1 className="text-xl font-bold tracking-tight flex-1 min-w-0">
-          {groupDisplayName(group.name, t)}
-          <span className="text-muted-foreground font-normal text-sm ml-2">
-            ({animes.length}{rawAnimes.length !== animes.length ? `/${rawAnimes.length}` : ''})
-          </span>
-        </h1>
+      {/* Row 1: Title */}
+      <h1 className="text-xl font-bold tracking-tight min-w-0">
+        {groupDisplayName(group.name, t)}
+        <span className="text-muted-foreground font-normal text-sm ml-2">
+          ({animes.length}{rawAnimes.length !== animes.length ? `/${rawAnimes.length}` : ''})
+        </span>
+      </h1>
 
-        <div className="flex items-center gap-1">
+      {/* Row 2: View toggle + Sort + Filter */}
+      <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 shrink-0">
           <Button
             variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
             size="icon"
@@ -149,10 +151,10 @@ function GroupPage() {
           </Button>
         </div>
 
-        <div className="flex items-center gap-2">
-          <label className="text-sm text-muted-foreground whitespace-nowrap">{t('home.sortBy')}</label>
+        <div className="flex items-center gap-2 flex-1">
+          <label className="hidden sm:block text-sm text-muted-foreground whitespace-nowrap">{t('home.sortBy')}</label>
           <Select value={sortKey} onValueChange={(val) => val && setSortKey(val)}>
-            <SelectTrigger className="w-44">
+            <SelectTrigger className="flex-1 sm:w-44 sm:flex-none">
               <SelectValue>
                 {t(SORT_OPTIONS.find((o) => o.value === sortKey)?.labelKey ?? '')}
               </SelectValue>
@@ -181,12 +183,12 @@ function GroupPage() {
               }
             >
               <SlidersHorizontal className="h-4 w-4" />
-              {t('home.filters')}
+              <span className="hidden sm:inline">{t('home.filters')}</span>
               {hasFilters && (
                 <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-primary" />
               )}
             </SheetTrigger>
-            <SheetContent side="right" className="w-80 flex flex-col gap-6">
+            <SheetContent side="right" className="flex flex-col gap-6">
               <SheetHeader>
                 <SheetTitle>{t('home.filters')}</SheetTitle>
               </SheetHeader>
@@ -282,7 +284,7 @@ function GroupPage() {
       ) : (
         <div className="flex-1 overflow-y-auto min-h-0 pr-3">
           <div className={viewMode === 'grid'
-            ? "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3"
+            ? "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-3"
             : "flex flex-col gap-3"
           }>
             {animes.map((anime) => (

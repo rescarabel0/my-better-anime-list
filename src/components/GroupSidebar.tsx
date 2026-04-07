@@ -33,7 +33,7 @@ function groupIcon(name: string) {
   return null
 }
 
-export function GroupSidebar() {
+export function GroupSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { t } = useTranslation()
   const { groups, deleteGroup, renameGroup } = useGroups()
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
@@ -84,7 +84,8 @@ export function GroupSidebar() {
             <Link
               to="/groups/$groupId"
               params={{ groupId: group.id }}
-              className="flex-1 flex items-center gap-2 rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors [&.active]:text-foreground [&.active]:bg-accent [&.active]:font-medium"
+              className="flex-1 flex items-center gap-2 rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors cursor-pointer [&.active]:text-foreground [&.active]:bg-accent [&.active]:font-medium"
+              onClick={onNavigate}
             >
               {groupIcon(group.name)}
               <span className="truncate">{groupDisplayName(group.name, t)}</span>
@@ -92,7 +93,7 @@ export function GroupSidebar() {
             </Link>
             {!group.isDefault && (
               <DropdownMenu>
-                <DropdownMenuTrigger className="opacity-0 group-hover/item:opacity-100 transition-opacity p-1 rounded-md hover:bg-accent mr-1">
+                <DropdownMenuTrigger className="opacity-0 group-hover/item:opacity-100 transition-opacity p-1 rounded-md hover:bg-accent mr-1 cursor-pointer">
                   <MoreHorizontal className="h-3.5 w-3.5" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent side="right" sideOffset={4}>

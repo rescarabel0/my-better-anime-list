@@ -175,9 +175,10 @@ function HomePage() {
   }
 
   return (
-    <div className="flex flex-col gap-4 h-full">
-      <div className="flex items-center gap-3">
-        <div className="relative max-w-md flex-1">
+    <div className="flex flex-col gap-3 h-full">
+      {/* Row 1: Search + Filter */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={t('home.searchPlaceholder')}
@@ -185,43 +186,6 @@ function HomePage() {
             onChange={(e) => setInputValue(e.target.value)}
             className="pl-9"
           />
-        </div>
-
-        <div className="flex items-center gap-1">
-          <Button
-            variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-            size="icon"
-            onClick={() => { setViewMode('grid'); localStorage.setItem('anime-view-mode', 'grid') }}
-            aria-label={t('home.view.grid')}
-          >
-            <LayoutGrid className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-            size="icon"
-            onClick={() => { setViewMode('list'); localStorage.setItem('anime-view-mode', 'list') }}
-            aria-label={t('home.view.list')}
-          >
-            <List className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <label className="text-sm text-muted-foreground whitespace-nowrap">{t('home.sortBy')}</label>
-          <Select value={sortKey} onValueChange={(val) => navigate({ search: (prev) => ({ ...prev, sort: val ?? 'score_desc' }) })}>
-            <SelectTrigger className="w-48">
-              <SelectValue>
-                {t(SORT_OPTIONS.find((o) => o.value === sortKey)?.labelKey ?? '')}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent alignItemWithTrigger={false}>
-              {SORT_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {t(opt.labelKey)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
 
         <Sheet
@@ -237,12 +201,12 @@ function HomePage() {
             }
           >
             <SlidersHorizontal className="h-4 w-4" />
-            {t('home.filters')}
+            <span className="hidden sm:inline">{t('home.filters')}</span>
             {hasFilters && (
               <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-primary" />
             )}
           </SheetTrigger>
-          <SheetContent side="right" className="w-80 flex flex-col gap-6">
+          <SheetContent side="right" className="flex flex-col gap-6">
             <SheetHeader>
               <SheetTitle>{t('home.filters')}</SheetTitle>
             </SheetHeader>
@@ -300,6 +264,46 @@ function HomePage() {
             </SheetFooter>
           </SheetContent>
         </Sheet>
+      </div>
+
+      {/* Row 2: View toggle + Sort */}
+      <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
+          <Button
+            variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+            size="icon"
+            onClick={() => { setViewMode('grid'); localStorage.setItem('anime-view-mode', 'grid') }}
+            aria-label={t('home.view.grid')}
+          >
+            <LayoutGrid className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+            size="icon"
+            onClick={() => { setViewMode('list'); localStorage.setItem('anime-view-mode', 'list') }}
+            aria-label={t('home.view.list')}
+          >
+            <List className="h-4 w-4" />
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-2 flex-1">
+          <label className="hidden sm:block text-sm text-muted-foreground whitespace-nowrap">{t('home.sortBy')}</label>
+          <Select value={sortKey} onValueChange={(val) => navigate({ search: (prev) => ({ ...prev, sort: val ?? 'score_desc' }) })}>
+            <SelectTrigger className="flex-1 sm:w-48 sm:flex-none">
+              <SelectValue>
+                {t(SORT_OPTIONS.find((o) => o.value === sortKey)?.labelKey ?? '')}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent alignItemWithTrigger={false}>
+              {SORT_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {t(opt.labelKey)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
         {hasFilters && (
           <Button
@@ -337,7 +341,7 @@ function HomePage() {
 
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto min-h-0">
         <div className={viewMode === 'grid'
-          ? "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 p-1 pb-4 pr-3"
+          ? "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-3 p-1 pb-4 pr-3"
           : "flex flex-col gap-3 p-1 pb-4 pr-3"
         }>
           {loading
