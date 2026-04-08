@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FolderPlus, Plus, Check } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
@@ -27,11 +27,20 @@ function groupDisplayName(name: string, t: (key: string) => string): string {
   return name
 }
 
+function getHomeSearch(): { sort: string; q: string; genres: number[] } {
+  try {
+    const raw = sessionStorage.getItem('anime-home-search')
+    if (raw) return JSON.parse(raw)
+  } catch { /* ignore */ }
+  return { sort: 'score_desc', q: '', genres: [] }
+}
+
 function AnimeDetailPage() {
   const { t } = useTranslation()
   const { id } = Route.useParams()
   const { groups, addAnimesToGroup } = useGroups()
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const homeSearch = useMemo(getHomeSearch, [])
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['anime', id],
@@ -63,7 +72,7 @@ function AnimeDetailPage() {
     return (
       <div className="space-y-4">
         <p className="text-destructive text-sm">{t('detail.error')}</p>
-        <Link to="/" search={{ sort: 'score_desc', q: '', genres: [] }}  className={buttonVariants({ variant: 'outline' })}>
+        <Link to="/" search={homeSearch}  className={buttonVariants({ variant: 'outline' })}>
           {t('detail.back')}
         </Link>
       </div>
@@ -72,7 +81,7 @@ function AnimeDetailPage() {
 
   return (
     <div className="space-y-6 h-full overflow-y-auto">
-      <Link to="/" search={{ sort: 'score_desc', q: '', genres: [] }}  className={buttonVariants({ variant: 'outline', size: 'sm' })}>
+      <Link to="/" search={homeSearch}  className={buttonVariants({ variant: 'outline', size: 'sm' })}>
         {t('detail.backArrow')}
       </Link>
 

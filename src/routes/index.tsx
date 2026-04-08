@@ -167,6 +167,10 @@ function HomePage() {
     return () => observer.disconnect()
   }, [handleObserver])
 
+  useEffect(() => {
+    sessionStorage.setItem('anime-home-search', JSON.stringify({ sort: sortKey, q: searchQuery, genres: genreIds }))
+  }, [sortKey, searchQuery, genreIds])
+
   const activeGenres = genres.filter((g) => genreIds.includes(g.mal_id))
   const hasFilters = genreIds.length > 0
 
