@@ -70,7 +70,7 @@ export function AnimeCard({ anime, variant = 'grid', selected, selectionMode, on
               {subtitle && (
                 <p className="text-xs text-muted-foreground line-clamp-1">{subtitle}</p>
               )}
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-nowrap gap-1">
                 {anime.score && (
                   <Badge variant="secondary" className="text-xs">
                     ⭐ {anime.score}
@@ -102,12 +102,14 @@ export function AnimeCard({ anime, variant = 'grid', selected, selectionMode, on
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           </div>
-          <CardContent className="p-3 space-y-1">
-            <h3 className="font-medium text-sm leading-tight line-clamp-2">{title}</h3>
-            {subtitle && (
-              <p className="text-xs text-muted-foreground line-clamp-1">{subtitle}</p>
-            )}
-            <div className="flex flex-wrap gap-1 pt-1">
+          <CardContent className="p-3 flex flex-col gap-1 flex-1">
+            <div className="flex-1 min-h-0 space-y-1">
+              <h3 className="font-medium text-sm leading-tight line-clamp-2">{title}</h3>
+              {subtitle && (
+                <p className="text-xs text-muted-foreground line-clamp-1">{subtitle}</p>
+              )}
+            </div>
+            <div className="flex flex-nowrap gap-1 pt-1">
               {anime.score && (
                 <Badge variant="secondary" className="text-xs">
                   ⭐ {anime.score}
