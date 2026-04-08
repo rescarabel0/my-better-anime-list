@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
-import { Plus, MoreHorizontal, Pencil, Trash2, Eye, Bookmark } from 'lucide-react'
+import { Plus, MoreHorizontal, Pencil, Trash2, Eye, Bookmark, Link2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -20,6 +20,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { useGroups } from '@/contexts/GroupsContext'
 import { CreateGroupDialog } from '@/components/CreateGroupDialog'
+import { ShareGroupDialog } from '@/components/ShareGroupDialog'
 
 function groupDisplayName(name: string, t: (key: string) => string): string {
   if (name === 'watched') return t('groups.watched')
@@ -39,6 +40,7 @@ export function GroupSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [renameDialogOpen, setRenameDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [targetGroup, setTargetGroup] = useState<{ id: string; name: string } | null>(null)
   const [renameName, setRenameName] = useState('')
 
@@ -84,30 +86,38 @@ export function GroupSidebar({ onNavigate }: { onNavigate?: () => void }) {
             <Link
               to="/groups/$groupId"
               params={{ groupId: group.id }}
-              className="flex-1 flex items-center gap-2 rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors cursor-pointer [&.active]:text-foreground [&.active]:bg-accent [&.active]:font-medium"
+              className="flex-1 flex items-center gap-2 rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors cursor-pointer [&.active]:text-foreground [&.active]:bg-accent [&.active]:font-medium min-w-0"
               onClick={onNavigate}
             >
               {groupIcon(group.name)}
-              <span className="truncate">{groupDisplayName(group.name, t)}</span>
-              <span className="ml-auto text-xs text-muted-foreground">{group.animeIds.length}</span>
+              <span className="truncate flex-1 min-w-0">{groupDisplayName(group.name, t)}</span>
             </Link>
-            {!group.isDefault && (
-              <DropdownMenu>
-                <DropdownMenuTrigger className="opacity-0 group-hover/item:opacity-100 transition-opacity p-1 rounded-md hover:bg-accent mr-1 cursor-pointer">
-                  <MoreHorizontal className="h-3.5 w-3.5" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent side="right" sideOffset={4}>
-                  <DropdownMenuItem onClick={() => handleRenameOpen(group)}>
-                    <Pencil className="h-4 w-4" />
-                    {t('groups.rename')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem variant="destructive" onClick={() => handleDeleteOpen(group)}>
-                    <Trash2 className="h-4 w-4" />
-                    {t('groups.delete')}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+            <div className="relative flex items-center justify-center w-8 h-7 shrink-0 mr-1">
+              <span className={`text-xs text-muted-foreground transition-opacity ${!group.isDefault ? 'group-hover/item:opacity-0' : ''}`}>
+                {group.animeIds.length}
+              </span>
+              {!group.isDefault && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/item:opacity-100 transition-opacity rounded-md hover:bg-accent cursor-pointer">
+                    <MoreHorizontal className="h-3.5 w-3.5" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent side="right" sideOffset={4}>
+                    <DropdownMenuItem onClick={() => handleRenameOpen(group)}>
+                      <Pencil className="h-4 w-4" />
+                      {t('groups.rename')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setTargetGroup(group); setShareDialogOpen(true) }}>
+                      <Link2 className="h-4 w-4" />
+                      {t('share.share')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem variant="destructive" onClick={() => handleDeleteOpen(group)}>
+                      <Trash2 className="h-4 w-4" />
+                      {t('groups.delete')}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
           </div>
         ))}
       </div>
@@ -155,6 +165,15 @@ export function GroupSidebar({ onNavigate }: { onNavigate?: () => void }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {targetGroup && (
+        <ShareGroupDialog
+          open={shareDialogOpen}
+          onOpenChange={setShareDialogOpen}
+          groupId={targetGroup.id}
+          groupName={groupDisplayName(targetGroup.name, t)}
+        />
+      )}
     </>
   )
 }
