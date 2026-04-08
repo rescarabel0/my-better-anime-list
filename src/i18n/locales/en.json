@@ -45,7 +45,8 @@
     "ratings": "Ratings",
     "popularity": "Popularity",
     "synopsis": "Synopsis",
-    "addToCollection": "Add to collection"
+    "addToCollection": "Add to collection",
+    "pictures": "Pictures"
   },
   "language": {
     "label": "Language",

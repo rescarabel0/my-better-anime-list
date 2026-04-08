@@ -44,3 +44,14 @@ export async function getAnimeById(id: number): Promise<JikanResponse<Anime>> {
   if (!res.ok) throw new Error('Failed to fetch anime details')
   return res.json()
 }
+
+export interface AnimePicture {
+  jpg: { image_url: string; small_image_url: string; large_image_url: string }
+  webp: { image_url: string; small_image_url: string; large_image_url: string }
+}
+
+export async function getAnimePictures(id: number): Promise<JikanResponse<AnimePicture[]>> {
+  const res = await fetch(`${BASE_URL}/anime/${id}/pictures`)
+  if (!res.ok) throw new Error('Failed to fetch anime pictures')
+  return res.json()
+}

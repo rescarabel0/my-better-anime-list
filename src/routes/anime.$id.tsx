@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
-import { getAnimeById } from '@/services/jikan'
+import { getAnimeById, getAnimePictures } from '@/services/jikan'
 import { useGroups } from '@/contexts/GroupsContext'
 import { CreateGroupDialog } from '@/components/CreateGroupDialog'
 
@@ -38,7 +38,14 @@ function AnimeDetailPage() {
     queryFn: () => getAnimeById(Number(id)),
   })
 
+  const { data: picturesData } = useQuery({
+    queryKey: ['anime-pictures', id],
+    queryFn: () => getAnimePictures(Number(id)),
+    enabled: !!data?.data,
+  })
+
   const anime = data?.data
+  const pictures = picturesData?.data ?? []
 
   const handleAddToGroup = (groupId: string) => {
     if (!anime) return
@@ -64,7 +71,7 @@ function AnimeDetailPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 h-full overflow-y-auto">
       <Link to="/" search={{ sort: 'score_desc', q: '', genres: [] }}  className={buttonVariants({ variant: 'outline', size: 'sm' })}>
         {t('detail.backArrow')}
       </Link>
@@ -187,6 +194,30 @@ function AnimeDetailPage() {
           </div>
         </div>
       ) : null}
+
+      {pictures.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="font-semibold text-sm">{t('detail.pictures')}</h2>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3">
+            {pictures.map((pic, i) => (
+              <a
+                key={i}
+                href={pic.jpg.large_image_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block overflow-hidden rounded-lg bg-muted aspect-[2/3] hover:opacity-80 transition-opacity"
+              >
+                <img
+                  src={pic.jpg.image_url}
+                  alt={`${anime?.title_english ?? anime?.title} - ${i + 1}`}
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                />
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
 
       <CreateGroupDialog
         open={createDialogOpen}
