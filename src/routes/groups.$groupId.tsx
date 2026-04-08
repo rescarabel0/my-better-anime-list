@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LayoutGrid, List, X, Check, SlidersHorizontal } from 'lucide-react'
+import { LayoutGrid, List, X, Check, SlidersHorizontal, Link2 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button, buttonVariants } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -22,6 +23,7 @@ import {
 } from '@/components/ui/sheet'
 import { useGroups, useSelection } from '@/contexts/GroupsContext'
 import { SelectionActionBar } from '@/components/SelectionActionBar'
+import { ShareGroupDialog } from '@/components/ShareGroupDialog'
 import type { AnimeGroupEntry } from '@/types/groups'
 
 export const Route = createFileRoute('/groups/$groupId')({
@@ -60,7 +62,7 @@ function groupDisplayName(name: string, t: (key: string) => string): string {
 function GroupPage() {
   const { t } = useTranslation()
   const { groupId } = Route.useParams()
-  const { groups, animeCache, removeAnimeFromGroup } = useGroups()
+  const { groups, animeCache, removeAnimeFromGroup, renameGroup } = useGroups()
   const { selected, toggleSelect } = useSelection()
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
     return (localStorage.getItem('anime-view-mode') as 'grid' | 'list') || 'grid'
@@ -69,6 +71,33 @@ function GroupPage() {
   const [sheetOpen, setSheetOpen] = useState(false)
   const [genreIds, setGenreIds] = useState<number[]>([])
   const [pendingGenreIds, setPendingGenreIds] = useState<number[]>([])
+  const [shareOpen, setShareOpen] = useState(false)
+  const [editingName, setEditingName] = useState(false)
+  const [nameValue, setNameValue] = useState('')
+  const nameInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (editingName) nameInputRef.current?.select()
+  }, [editingName])
+
+  function startRename() {
+    if (!group || group.isDefault) return
+    setNameValue(group.name)
+    setEditingName(true)
+  }
+
+  function commitRename() {
+    const trimmed = nameValue.trim()
+    if (trimmed && group && trimmed !== group.name) {
+      renameGroup(group.id, trimmed)
+    }
+    setEditingName(false)
+  }
+
+  function handleNameKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Enter') commitRename()
+    if (e.key === 'Escape') setEditingName(false)
+  }
 
   const group = groups.find((g) => g.id === groupId)
 
@@ -122,13 +151,35 @@ function GroupPage() {
 
   return (
     <div className="flex flex-col gap-4 h-full">
-      {/* Row 1: Title */}
-      <h1 className="text-xl font-bold tracking-tight min-w-0">
-        {groupDisplayName(group.name, t)}
-        <span className="text-muted-foreground font-normal text-sm ml-2">
-          ({animes.length}{rawAnimes.length !== animes.length ? `/${rawAnimes.length}` : ''})
-        </span>
-      </h1>
+      {/* Row 1: Share + Title */}
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setShareOpen(true)}>
+          <Link2 className="h-4 w-4" />
+        </Button>
+        {editingName ? (
+          <Input
+            ref={nameInputRef}
+            value={nameValue}
+            onChange={(e) => setNameValue(e.target.value)}
+            onBlur={commitRename}
+            onKeyDown={handleNameKeyDown}
+            className="h-8 text-xl font-bold tracking-tight px-1 w-full max-w-xs"
+          />
+        ) : (
+          <h1 className="text-xl font-bold tracking-tight min-w-0 flex items-center gap-1.5">
+            <span
+              onClick={!group.isDefault ? startRename : undefined}
+              className={!group.isDefault ? 'cursor-text rounded px-0.5 -mx-0.5 hover:bg-muted transition-colors' : ''}
+              title={!group.isDefault ? t('groups.rename') : undefined}
+            >
+              {groupDisplayName(group.name, t)}
+            </span>
+            <span className="text-muted-foreground font-normal text-sm">
+              ({animes.length}{rawAnimes.length !== animes.length ? `/${rawAnimes.length}` : ''})
+            </span>
+          </h1>
+        )}
+      </div>
 
       {/* Row 2: View toggle + Sort + Filter */}
       <div className="flex items-center gap-2">
@@ -289,6 +340,13 @@ function GroupPage() {
       )}
 
       <SelectionActionBar />
+
+      <ShareGroupDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        groupId={groupId}
+        groupName={groupDisplayName(group.name, t)}
+      />
     </div>
   )
 }
