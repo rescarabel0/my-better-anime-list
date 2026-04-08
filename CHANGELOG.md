@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.14](https://github.com/rescarabel0/my-better-anime-list/compare/v0.0.13...v0.0.14) (2026-04-08)
+
+
+### Features
+
+* inline rename group name on group page with hover cue, move share icon left ([f5d0a0c](https://github.com/rescarabel0/my-better-anime-list/commit/f5d0a0c0ff4d33a4c54c4c6c24dce96e7f67d21e))
+
 ### [0.0.13](https://github.com/rescarabel0/my-better-anime-list/compare/v0.0.12...v0.0.13) (2026-04-08)
 
 
