@@ -122,6 +122,7 @@ function MyProfilePage() {
             initialName={activeUser.name}
             initialBio={activeUser.bio}
             initialAvatarUrl={activeUser.avatarUrl}
+            excludeUserId={activeUser.id}
             onSubmit={(name, bio, avatarUrl) => {
               updateUser(activeUser.id, { name, bio, avatarUrl })
               setEditOpen(false)

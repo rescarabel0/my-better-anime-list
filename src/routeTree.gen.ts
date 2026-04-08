@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GroupsIndexRouteImport } from './routes/groups.index'
 import { Route as GroupsGroupIdRouteImport } from './routes/groups.$groupId'
 import { Route as AnimeIdRouteImport } from './routes/anime.$id'
 import { Route as ProfileIndexRouteImport } from './routes/profile.index'
@@ -19,6 +20,11 @@ import { Route as SharedTokenRouteImport } from './routes/shared.$token'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GroupsIndexRoute = GroupsIndexRouteImport.update({
+  id: '/groups/',
+  path: '/groups/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GroupsGroupIdRoute = GroupsGroupIdRouteImport.update({
@@ -50,6 +56,7 @@ const SharedTokenRoute = SharedTokenRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/anime/$id': typeof AnimeIdRoute
+  '/groups/': typeof GroupsIndexRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
   '/profile/': typeof ProfileIndexRoute
   '/profile/$userId': typeof ProfileUserIdRoute
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/anime/$id': typeof AnimeIdRoute
+  '/groups/': typeof GroupsIndexRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
   '/profile/': typeof ProfileIndexRoute
   '/profile/$userId': typeof ProfileUserIdRoute
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/anime/$id': typeof AnimeIdRoute
+  '/groups/': typeof GroupsIndexRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
   '/profile/': typeof ProfileIndexRoute
   '/profile/$userId': typeof ProfileUserIdRoute
@@ -74,15 +83,16 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/anime/$id' | '/groups/$groupId' | '/profile/' | '/profile/$userId' | '/shared/$token'
+  fullPaths: '/' | '/anime/$id' | '/groups/' | '/groups/$groupId' | '/profile/' | '/profile/$userId' | '/shared/$token'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/anime/$id' | '/groups/$groupId' | '/profile/' | '/profile/$userId' | '/shared/$token'
-  id: '__root__' | '/' | '/anime/$id' | '/groups/$groupId' | '/profile/' | '/profile/$userId' | '/shared/$token'
+  to: '/' | '/anime/$id' | '/groups/' | '/groups/$groupId' | '/profile/' | '/profile/$userId' | '/shared/$token'
+  id: '__root__' | '/' | '/anime/$id' | '/groups/' | '/groups/$groupId' | '/profile/' | '/profile/$userId' | '/shared/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnimeIdRoute: typeof AnimeIdRoute
+  GroupsIndexRoute: typeof GroupsIndexRoute
   GroupsGroupIdRoute: typeof GroupsGroupIdRoute
   ProfileIndexRoute: typeof ProfileIndexRoute
   ProfileUserIdRoute: typeof ProfileUserIdRoute
@@ -96,6 +106,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/groups/': {
+      id: '/groups/'
+      path: '/groups'
+      fullPath: '/groups/'
+      preLoaderRoute: typeof GroupsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/groups/$groupId': {
@@ -139,6 +156,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnimeIdRoute: AnimeIdRoute,
+  GroupsIndexRoute: GroupsIndexRoute,
   GroupsGroupIdRoute: GroupsGroupIdRoute,
   ProfileIndexRoute: ProfileIndexRoute,
   ProfileUserIdRoute: ProfileUserIdRoute,

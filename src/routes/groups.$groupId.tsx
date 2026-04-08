@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LayoutGrid, List, X, Check, SlidersHorizontal, Link2 } from 'lucide-react'
+import { LayoutGrid, List, X, Check, SlidersHorizontal, Link2, Copy } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -22,6 +22,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { useGroups, useSelection } from '@/contexts/GroupsContext'
+import { useUser } from '@/contexts/UserContext'
 import { SelectionActionBar } from '@/components/SelectionActionBar'
 import { ShareGroupDialog } from '@/components/ShareGroupDialog'
 import type { AnimeGroupEntry } from '@/types/groups'
@@ -62,7 +63,8 @@ function groupDisplayName(name: string, t: (key: string) => string): string {
 function GroupPage() {
   const { t } = useTranslation()
   const { groupId } = Route.useParams()
-  const { groups, animeCache, removeAnimeFromGroup, renameGroup } = useGroups()
+  const { groups, allGroups, animeCache, removeAnimeFromGroup, renameGroup } = useGroups()
+  const { getUserById } = useUser()
   const { selected, toggleSelect } = useSelection()
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
     return (localStorage.getItem('anime-view-mode') as 'grid' | 'list') || 'grid'
@@ -99,7 +101,9 @@ function GroupPage() {
     if (e.key === 'Escape') setEditingName(false)
   }
 
-  const group = groups.find((g) => g.id === groupId)
+  const group = groups.find((g) => g.id === groupId) ?? allGroups.find((g) => g.id === groupId)
+  const isOwnGroup = groups.some((g) => g.id === groupId)
+  const groupOwner = group ? getUserById(group.userId) : undefined
 
   const handleToggleSelect = useCallback((malId: number) => {
     const entry = animeCache[malId]
@@ -151,33 +155,54 @@ function GroupPage() {
 
   return (
     <div className="flex flex-col gap-4 h-full">
-      {/* Row 1: Share + Title */}
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setShareOpen(true)}>
-          <Link2 className="h-4 w-4" />
-        </Button>
-        {editingName ? (
-          <Input
-            ref={nameInputRef}
-            value={nameValue}
-            onChange={(e) => setNameValue(e.target.value)}
-            onBlur={commitRename}
-            onKeyDown={handleNameKeyDown}
-            className="h-8 text-xl font-bold tracking-tight px-1 w-full max-w-xs"
-          />
-        ) : (
-          <h1 className="text-xl font-bold tracking-tight min-w-0 flex items-center gap-1.5">
-            <span
-              onClick={!group.isDefault ? startRename : undefined}
-              className={!group.isDefault ? 'cursor-text rounded px-0.5 -mx-0.5 hover:bg-muted transition-colors' : ''}
-              title={!group.isDefault ? t('groups.rename') : undefined}
-            >
-              {groupDisplayName(group.name, t)}
-            </span>
-            <span className="text-muted-foreground font-normal text-sm">
-              ({animes.length}{rawAnimes.length !== animes.length ? `/${rawAnimes.length}` : ''})
-            </span>
-          </h1>
+      {/* Row 1: Share + Title + Owner */}
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-2">
+          {isOwnGroup && (
+            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setShareOpen(true)}>
+              <Link2 className="h-4 w-4" />
+            </Button>
+          )}
+          {editingName ? (
+            <div className="flex items-center gap-3 min-w-0">
+              <Input
+                ref={nameInputRef}
+                value={nameValue}
+                onChange={(e) => setNameValue(e.target.value)}
+                onBlur={commitRename}
+                onKeyDown={handleNameKeyDown}
+                className="h-8 text-xl font-bold tracking-tight px-2 w-full max-w-xs"
+              />
+              <span className="text-muted-foreground font-normal text-sm shrink-0">
+                ({animes.length}{rawAnimes.length !== animes.length ? `/${rawAnimes.length}` : ''})
+              </span>
+            </div>
+          ) : (
+            <h1 className="text-xl font-bold tracking-tight min-w-0 flex items-center gap-3">
+              <span
+                onClick={isOwnGroup && !group.isDefault ? startRename : undefined}
+                className={isOwnGroup && !group.isDefault ? 'cursor-text rounded px-2 -mx-2 py-0.5 hover:bg-muted transition-colors' : ''}
+                title={isOwnGroup && !group.isDefault ? t('groups.rename') : undefined}
+              >
+                {groupDisplayName(group.name, t)}
+              </span>
+              <span className="text-muted-foreground font-normal text-sm">
+                ({animes.length}{rawAnimes.length !== animes.length ? `/${rawAnimes.length}` : ''})
+              </span>
+            </h1>
+          )}
+          {!isOwnGroup && rawAnimes.length > 0 && (
+            <CopyGroupButton groupName={group.name} ownerName={groupOwner?.name} animes={rawAnimes} />
+          )}
+        </div>
+        {!isOwnGroup && groupOwner && (
+          <Link
+            to="/profile/$userId"
+            params={{ userId: group.userId }}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 w-fit"
+          >
+            {t('groups.ownedBy', { name: groupOwner.name })}
+          </Link>
         )}
       </div>
 
@@ -322,7 +347,7 @@ function GroupPage() {
         <div className="flex-1 overflow-y-auto min-h-0 pr-3">
           <div className={viewMode === 'grid'
             ? "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-3"
-            : "flex flex-col gap-3"
+            : "grid grid-cols-1 md:grid-cols-2 gap-3"
           }>
             {animes.map((anime) => (
               <GroupAnimeCard
@@ -332,7 +357,7 @@ function GroupPage() {
                 selected={selected.has(anime.mal_id)}
                 selectionMode={selected.size > 0}
                 onToggleSelect={() => handleToggleSelect(anime.mal_id)}
-                onRemove={() => removeAnimeFromGroup(groupId, anime.mal_id)}
+                onRemove={isOwnGroup ? () => removeAnimeFromGroup(groupId, anime.mal_id) : undefined}
               />
             ))}
           </div>
@@ -357,7 +382,7 @@ interface GroupAnimeCardProps {
   selected: boolean
   selectionMode?: boolean
   onToggleSelect: () => void
-  onRemove: () => void
+  onRemove?: () => void
 }
 
 function GroupAnimeCard({ anime, variant, selected, selectionMode, onToggleSelect, onRemove }: GroupAnimeCardProps) {
@@ -374,7 +399,7 @@ function GroupAnimeCard({ anime, variant, selected, selectionMode, onToggleSelec
   const handleRemoveClick = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    onRemove()
+    onRemove?.()
   }
 
   const handleLinkClick = (e: React.MouseEvent) => {
@@ -395,7 +420,7 @@ function GroupAnimeCard({ anime, variant, selected, selectionMode, onToggleSelec
     </div>
   )
 
-  const removeButton = (
+  const removeButton = onRemove ? (
     <div
       className="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
       onClick={handleRemoveClick}
@@ -404,7 +429,7 @@ function GroupAnimeCard({ anime, variant, selected, selectionMode, onToggleSelec
         <X className="h-3.5 w-3.5" />
       </div>
     </div>
-  )
+  ) : null
 
   if (variant === 'list') {
     return (
@@ -480,5 +505,28 @@ function GroupAnimeCard({ anime, variant, selected, selectionMode, onToggleSelec
         </Card>
       </Link>
     </div>
+  )
+}
+
+function CopyGroupButton({ groupName, ownerName, animes }: { groupName: string; ownerName?: string; animes: AnimeGroupEntry[] }) {
+  const { t } = useTranslation()
+  const { createGroup, addAnimesToGroup } = useGroups()
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = async () => {
+    const copyName = ownerName ? `${groupName} - ${ownerName}` : groupName
+    const created = await createGroup(copyName)
+    if (created && animes.length > 0) {
+      addAnimesToGroup(created.id, animes)
+    }
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <Button variant="outline" size="sm" className="h-7 gap-1.5 text-xs shrink-0" onClick={handleCopy} disabled={copied}>
+      <Copy className="h-3 w-3" />
+      {copied ? t('share.copyToCollection') + ' ✓' : t('share.copyToCollection')}
+    </Button>
   )
 }

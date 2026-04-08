@@ -4,11 +4,14 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { AvatarDisplay } from '@/components/AvatarDisplay'
+import { useUser } from '@/contexts/UserContext'
 
 interface ProfileFormProps {
   initialName?: string
   initialBio?: string
   initialAvatarUrl?: string
+  /** When editing, pass the current user's id so their own name is not flagged as duplicate */
+  excludeUserId?: string
   onSubmit: (name: string, bio: string, avatarUrl: string) => void
   submitLabel?: string
 }
@@ -17,18 +20,25 @@ export function ProfileForm({
   initialName = '',
   initialBio = '',
   initialAvatarUrl = '',
+  excludeUserId,
   onSubmit,
   submitLabel,
 }: ProfileFormProps) {
   const { t } = useTranslation()
+  const { allUsers } = useUser()
   const [name, setName] = useState(initialName)
   const [bio, setBio] = useState(initialBio)
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl)
 
+  const trimmedName = name.trim()
+  const nameTaken = trimmedName.length > 0 && allUsers.some(
+    (u) => u.id !== excludeUserId && u.name.toLowerCase() === trimmedName.toLowerCase(),
+  )
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (name.trim()) {
-      onSubmit(name.trim(), bio.trim(), avatarUrl.trim())
+    if (trimmedName && !nameTaken) {
+      onSubmit(trimmedName, bio.trim(), avatarUrl.trim())
     }
   }
 
@@ -58,6 +68,9 @@ export function ProfileForm({
           required
           autoFocus
         />
+        {nameTaken && (
+          <p className="text-sm text-destructive">{t('profile.nameTaken')}</p>
+        )}
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -70,7 +83,7 @@ export function ProfileForm({
         />
       </div>
 
-      <Button type="submit" disabled={!name.trim()}>
+      <Button type="submit" disabled={!trimmedName || nameTaken}>
         {submitLabel ?? t('profile.save')}
       </Button>
     </form>

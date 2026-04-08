@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate, useMatches } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { Plus, MoreHorizontal, Pencil, Trash2, Eye, Bookmark, Link2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -62,10 +62,20 @@ export function GroupSidebar({ onNavigate }: { onNavigate?: () => void }) {
     setDeleteDialogOpen(true)
   }
 
+  const navigate = useNavigate()
+  const matches = useMatches()
+
   const handleDeleteConfirm = () => {
     if (targetGroup) {
       deleteGroup(targetGroup.id)
       setDeleteDialogOpen(false)
+      // If we're on the deleted group's page, redirect to home
+      const isOnGroupPage = matches.some(
+        (m) => m.routeId === '/groups/$groupId' && (m.params as { groupId?: string }).groupId === targetGroup.id
+      )
+      if (isOnGroupPage) {
+        navigate({ to: '/', search: { sort: 'score_desc', q: '', genres: [] } })
+      }
     }
   }
 

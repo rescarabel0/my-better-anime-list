@@ -3,10 +3,11 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { AvatarDisplay } from '@/components/AvatarDisplay'
 import { useUser } from '@/contexts/UserContext'
 import { useGroups } from '@/contexts/GroupsContext'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { Copy } from 'lucide-react'
 
 export const Route = createFileRoute('/profile/$userId')({
   component: UserProfilePage,
@@ -78,6 +79,7 @@ function UserProfilePage() {
               <GroupPreview
                 key={group.id}
                 groupName={groupDisplayName(group.name, t)}
+                ownerName={user.name}
                 animeIds={group.animeIds}
                 animeCache={animeCache}
                 isOwnProfile={isOwnProfile}
@@ -93,34 +95,66 @@ function UserProfilePage() {
 
 interface GroupPreviewProps {
   groupName: string
+  ownerName: string
   animeIds: number[]
   animeCache: Record<number, import('@/types/groups').AnimeGroupEntry>
   isOwnProfile: boolean
   groupId: string
 }
 
-function GroupPreview({ groupName, animeIds, animeCache, isOwnProfile, groupId }: GroupPreviewProps) {
+function GroupPreview({ groupName, ownerName, animeIds, animeCache, isOwnProfile, groupId }: GroupPreviewProps) {
   const { t } = useTranslation()
-  const [expanded, setExpanded] = useState(false)
+  const { createGroup, addAnimesToGroup } = useGroups()
+  const [copied, setCopied] = useState(false)
   const allAnimes = animeIds.map((id) => animeCache[id]).filter(Boolean)
-  const displayAnimes = expanded ? allAnimes : allAnimes.slice(0, 6)
+  const displayAnimes = allAnimes.slice(0, 6)
+
+  const handleCopyGroup = async () => {
+    const copyName = isOwnProfile ? groupName : `${groupName} - ${ownerName}`
+    const created = await createGroup(copyName)
+    if (created && allAnimes.length > 0) {
+      addAnimesToGroup(created.id, allAnimes)
+    }
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h3 className="font-medium text-sm">{groupName}</h3>
-          <Badge variant="secondary" className="text-xs">{animeIds.length}</Badge>
-        </div>
-        {isOwnProfile && (
           <Link
             to="/groups/$groupId"
             params={{ groupId }}
-            className="text-xs text-primary hover:underline"
+            className="font-medium text-sm hover:underline"
           >
-            {t('profile.viewGroup')}
+            {groupName}
           </Link>
-        )}
+          <Badge variant="secondary" className="text-xs">{animeIds.length}</Badge>
+        </div>
+        <div className="flex items-center gap-2">
+          {!isOwnProfile && allAnimes.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 gap-1 text-xs"
+              onClick={handleCopyGroup}
+              disabled={copied}
+            >
+              <Copy className="h-3 w-3" />
+              {copied ? t('share.copyToCollection') + ' ✓' : t('share.copyToCollection')}
+            </Button>
+          )}
+          {allAnimes.length > 6 && (
+            <Link
+              to="/groups/$groupId"
+              params={{ groupId }}
+              className="text-xs text-primary hover:underline"
+            >
+              {t('profile.showAll', { count: allAnimes.length })}
+            </Link>
+          )}
+        </div>
       </div>
 
       {allAnimes.length === 0 ? (
@@ -157,24 +191,6 @@ function GroupPreview({ groupName, animeIds, animeCache, isOwnProfile, groupId }
             })}
           </div>
 
-          {allAnimes.length > 6 && (
-            <button
-              className="text-sm text-primary hover:underline cursor-pointer flex items-center gap-1 self-start"
-              onClick={() => setExpanded(!expanded)}
-            >
-              {expanded ? (
-                <>
-                  {t('profile.showLess')}
-                  <ChevronUp className="h-3.5 w-3.5" />
-                </>
-              ) : (
-                <>
-                  {t('profile.showAll', { count: allAnimes.length })}
-                  <ChevronDown className="h-3.5 w-3.5" />
-                </>
-              )}
-            </button>
-          )}
         </>
       )}
     </div>

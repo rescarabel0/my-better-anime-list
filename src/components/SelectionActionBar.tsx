@@ -110,12 +110,7 @@ export function SelectionActionBar() {
       <CreateGroupDialog
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
-        onCreated={(name) => {
-          const group = groups.find((g) => g.name === name)
-          if (group) {
-            handleAddToGroup(group.id)
-          }
-        }}
+        onCreated={(groupId) => handleAddToGroup(groupId)}
       />
     </>
   )

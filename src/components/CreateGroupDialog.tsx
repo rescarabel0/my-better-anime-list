@@ -27,16 +27,12 @@ export function CreateGroupDialog({ open, onOpenChange, onCreated }: CreateGroup
   const isDuplicate = groups.some((g) => g.name === trimmed)
   const isValid = trimmed.length > 0 && !isDuplicate
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!isValid) return
-    createGroup(trimmed)
+    const created = await createGroup(trimmed)
     setName('')
     onOpenChange(false)
-    // Find the newly created group - it will be the last one
-    // We need to use a timeout since state updates are async
-    setTimeout(() => {
-      onCreated?.(trimmed)
-    }, 0)
+    if (created) onCreated?.(created.id)
   }
 
   return (

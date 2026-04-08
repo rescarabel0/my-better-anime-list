@@ -1,55 +1,7 @@
-import { createContext, useContext, useReducer, useEffect, useCallback, useMemo, type ReactNode } from 'react'
-import type { AnimeGroupEntry, AnimeGroup, GroupsStorage } from '@/types/groups'
-import type { UserStorage } from '@/types/user'
+import { createContext, useContext, useReducer, useEffect, useCallback, useMemo, useState, useRef, type ReactNode } from 'react'
+import type { AnimeGroupEntry, AnimeGroup } from '@/types/groups'
 import { useUser } from '@/contexts/UserContext'
-
-const STORAGE_KEY = 'anime-groups'
-const USERS_KEY = 'anime-users'
-
-function migrateAndLoad(): GroupsStorage {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) {
-      const parsed = JSON.parse(raw) as GroupsStorage
-      if (parsed.groups && parsed.animeCache) {
-        const needsMigration = parsed.groups.some((g) => !g.userId)
-        if (needsMigration) {
-          const usersRaw = localStorage.getItem(USERS_KEY)
-          let userId: string
-
-          if (usersRaw) {
-            const usersData = JSON.parse(usersRaw) as UserStorage
-            userId = usersData.activeUserId ?? Object.keys(usersData.users)[0] ?? crypto.randomUUID()
-          } else {
-            userId = crypto.randomUUID()
-            const userStorage: UserStorage = {
-              users: {
-                [userId]: {
-                  id: userId,
-                  name: 'User',
-                  bio: '',
-                  avatarUrl: '',
-                  createdAt: new Date().toISOString(),
-                },
-              },
-              activeUserId: userId,
-            }
-            localStorage.setItem(USERS_KEY, JSON.stringify(userStorage))
-          }
-
-          parsed.groups = parsed.groups.map((g) => ({ ...g, userId: g.userId || userId }))
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed))
-        }
-        return parsed
-      }
-    }
-  } catch { /* ignore */ }
-  return { groups: [], animeCache: {} }
-}
-
-function saveGroups(state: GroupsStorage) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
-}
+import { groupsApi, animeCacheApi } from '@/lib/api'
 
 // --- Selection Context ---
 
@@ -103,26 +55,26 @@ const SelectionContext = createContext<SelectionContextValue | null>(null)
 
 // --- Groups Context ---
 
+interface GroupsState {
+  groups: AnimeGroup[]
+  animeCache: Record<number, AnimeGroupEntry>
+}
+
 type GroupsAction =
-  | { type: 'CREATE_GROUP'; name: string; userId: string }
+  | { type: 'SET_STATE'; groups: AnimeGroup[]; animeCache: Record<number, AnimeGroupEntry> }
+  | { type: 'CREATE_GROUP'; group: AnimeGroup }
   | { type: 'DELETE_GROUP'; groupId: string }
   | { type: 'RENAME_GROUP'; groupId: string; name: string }
   | { type: 'ADD_ANIMES'; groupId: string; entries: AnimeGroupEntry[] }
   | { type: 'REMOVE_ANIME'; groupId: string; malId: number }
-  | { type: 'ENSURE_DEFAULTS'; userId: string }
+  | { type: 'ADD_GROUPS'; groups: AnimeGroup[] }
 
-function groupsReducer(state: GroupsStorage, action: GroupsAction): GroupsStorage {
+function groupsReducer(state: GroupsState, action: GroupsAction): GroupsState {
   switch (action.type) {
+    case 'SET_STATE':
+      return { groups: action.groups, animeCache: action.animeCache }
     case 'CREATE_GROUP': {
-      const newGroup: AnimeGroup = {
-        id: crypto.randomUUID(),
-        name: action.name,
-        isDefault: false,
-        animeIds: [],
-        createdAt: new Date().toISOString(),
-        userId: action.userId,
-      }
-      return { ...state, groups: [...state.groups, newGroup] }
+      return { ...state, groups: [...state.groups, action.group] }
     }
     case 'DELETE_GROUP': {
       return { ...state, groups: state.groups.filter((g) => g.id !== action.groupId) }
@@ -160,33 +112,8 @@ function groupsReducer(state: GroupsStorage, action: GroupsAction): GroupsStorag
         ),
       }
     }
-    case 'ENSURE_DEFAULTS': {
-      const userGroups = state.groups.filter((g) => g.userId === action.userId)
-      const hasWatched = userGroups.some((g) => g.name === 'watched' && g.isDefault)
-      const hasWantToWatch = userGroups.some((g) => g.name === 'wantToWatch' && g.isDefault)
-      if (hasWatched && hasWantToWatch) return state
-      const newGroups = [...state.groups]
-      if (!hasWatched) {
-        newGroups.push({
-          id: `watched-${action.userId}`,
-          name: 'watched',
-          isDefault: true,
-          animeIds: [],
-          createdAt: new Date().toISOString(),
-          userId: action.userId,
-        })
-      }
-      if (!hasWantToWatch) {
-        newGroups.push({
-          id: `want-to-watch-${action.userId}`,
-          name: 'wantToWatch',
-          isDefault: true,
-          animeIds: [],
-          createdAt: new Date().toISOString(),
-          userId: action.userId,
-        })
-      }
-      return { ...state, groups: newGroups }
+    case 'ADD_GROUPS': {
+      return { ...state, groups: [...state.groups, ...action.groups] }
     }
     default:
       return state
@@ -197,13 +124,14 @@ interface GroupsContextValue {
   groups: AnimeGroup[]
   allGroups: AnimeGroup[]
   animeCache: Record<number, AnimeGroupEntry>
-  createGroup: (name: string) => void
+  createGroup: (name: string) => Promise<AnimeGroup | undefined>
   deleteGroup: (groupId: string) => void
   renameGroup: (groupId: string, name: string) => void
   addAnimesToGroup: (groupId: string, entries: AnimeGroupEntry[]) => void
   removeAnimeFromGroup: (groupId: string, malId: number) => void
   getGroupsByUserId: (userId: string) => AnimeGroup[]
   getGroupById: (groupId: string) => AnimeGroup | undefined
+  loading: boolean
 }
 
 const GroupsContext = createContext<GroupsContextValue | null>(null)
@@ -211,19 +139,56 @@ const GroupsContext = createContext<GroupsContextValue | null>(null)
 // --- Provider ---
 
 export function GroupsProvider({ children }: { children: ReactNode }) {
-  const { activeUserId } = useUser()
+  const { activeUserId, loading: userLoading } = useUser()
   const [selection, selectionDispatch] = useReducer(selectionReducer, { selected: new Map() })
-  const [groupsState, groupsDispatch] = useReducer(groupsReducer, undefined, migrateAndLoad)
+  const [groupsState, groupsDispatch] = useReducer(groupsReducer, { groups: [], animeCache: {} })
+  const [loading, setLoading] = useState(true)
 
+  // Load initial data from API
   useEffect(() => {
-    saveGroups(groupsState)
-  }, [groupsState])
-
-  useEffect(() => {
-    if (activeUserId) {
-      groupsDispatch({ type: 'ENSURE_DEFAULTS', userId: activeUserId })
+    if (userLoading) return
+    async function load() {
+      try {
+        const [groups, cacheEntries] = await Promise.all([
+          groupsApi.getAll(),
+          animeCacheApi.getAll(),
+        ])
+        const animeCache: Record<number, AnimeGroupEntry> = {}
+        for (const entry of cacheEntries) {
+          const { id: _, ...rest } = entry as AnimeGroupEntry & { id: number }
+          animeCache[rest.mal_id] = rest
+        }
+        groupsDispatch({ type: 'SET_STATE', groups, animeCache })
+      } catch {
+        // API not available
+      } finally {
+        setLoading(false)
+      }
     }
-  }, [activeUserId])
+    load()
+  }, [userLoading])
+
+  useEffect(() => {
+    if (!activeUserId || loading) return
+    const userId = activeUserId
+    async function ensureDefaults() {
+      const userGroups = groupsState.groups.filter((g) => g.userId === userId)
+      const hasWatched = userGroups.some((g) => g.name === 'watched' && g.isDefault)
+      const hasWantToWatch = userGroups.some((g) => g.name === 'wantToWatch' && g.isDefault)
+      if (hasWatched && hasWantToWatch) return
+      const toCreate: Omit<AnimeGroup, 'id'>[] = []
+      if (!hasWatched) {
+        toCreate.push({ name: 'watched', isDefault: true, animeIds: [], createdAt: new Date().toISOString(), userId })
+      }
+      if (!hasWantToWatch) {
+        toCreate.push({ name: 'wantToWatch', isDefault: true, animeIds: [], createdAt: new Date().toISOString(), userId })
+      }
+      const created = await Promise.all(toCreate.map((g) => groupsApi.create(g)))
+      groupsDispatch({ type: 'ADD_GROUPS', groups: created })
+    }
+    ensureDefaults()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeUserId, loading])
 
   const selectionValue: SelectionContextValue = {
     selected: selection.selected,
@@ -232,6 +197,9 @@ export function GroupsProvider({ children }: { children: ReactNode }) {
     deselectAnime: useCallback((malId) => selectionDispatch({ type: 'DESELECT', malId }), []),
     clearSelection: useCallback(() => selectionDispatch({ type: 'CLEAR' }), []),
   }
+
+  const groupsRef = useRef(groupsState.groups)
+  groupsRef.current = groupsState.groups
 
   const userGroups = useMemo(
     () => activeUserId ? groupsState.groups.filter((g) => g.userId === activeUserId) : [],
@@ -248,19 +216,58 @@ export function GroupsProvider({ children }: { children: ReactNode }) {
     [groupsState.groups],
   )
 
+  const createGroup = useCallback(async (name: string): Promise<AnimeGroup | undefined> => {
+    if (!activeUserId) return undefined
+    const created = await groupsApi.create({ name, isDefault: false, animeIds: [], createdAt: new Date().toISOString(), userId: activeUserId })
+    groupsDispatch({ type: 'CREATE_GROUP', group: created })
+    return created
+  }, [activeUserId])
+
+  const deleteGroup = useCallback((groupId: string) => {
+    groupsDispatch({ type: 'DELETE_GROUP', groupId })
+    groupsApi.delete(groupId).catch(console.error)
+  }, [])
+
+  const renameGroup = useCallback((groupId: string, name: string) => {
+    groupsDispatch({ type: 'RENAME_GROUP', groupId, name })
+    groupsApi.update(groupId, { name }).catch(console.error)
+  }, [])
+
+  const addAnimesToGroup = useCallback((groupId: string, entries: AnimeGroupEntry[]) => {
+    groupsDispatch({ type: 'ADD_ANIMES', groupId, entries })
+    // Persist anime cache entries
+    for (const entry of entries) {
+      animeCacheApi.upsert(entry).catch(console.error)
+    }
+    // Update the group's animeIds on the server
+    const group = groupsRef.current.find((g) => g.id === groupId)
+    const currentIds = group?.animeIds ?? []
+    const newIds = entries.map((e) => e.mal_id).filter((id) => !currentIds.includes(id))
+    if (newIds.length > 0) {
+      groupsApi.update(groupId, { animeIds: [...currentIds, ...newIds] }).catch(console.error)
+    }
+  }, [])
+
+  const removeAnimeFromGroup = useCallback((groupId: string, malId: number) => {
+    groupsDispatch({ type: 'REMOVE_ANIME', groupId, malId })
+    const group = groupsRef.current.find((g) => g.id === groupId)
+    if (group) {
+      groupsApi.update(groupId, { animeIds: group.animeIds.filter((id) => id !== malId) }).catch(console.error)
+    }
+  }, [])
+
   const groupsValue: GroupsContextValue = {
     groups: userGroups,
     allGroups: groupsState.groups,
     animeCache: groupsState.animeCache,
-    createGroup: useCallback((name) => {
-      if (activeUserId) groupsDispatch({ type: 'CREATE_GROUP', name, userId: activeUserId })
-    }, [activeUserId]),
-    deleteGroup: useCallback((groupId) => groupsDispatch({ type: 'DELETE_GROUP', groupId }), []),
-    renameGroup: useCallback((groupId, name) => groupsDispatch({ type: 'RENAME_GROUP', groupId, name }), []),
-    addAnimesToGroup: useCallback((groupId, entries) => groupsDispatch({ type: 'ADD_ANIMES', groupId, entries }), []),
-    removeAnimeFromGroup: useCallback((groupId, malId) => groupsDispatch({ type: 'REMOVE_ANIME', groupId, malId }), []),
+    createGroup,
+    deleteGroup,
+    renameGroup,
+    addAnimesToGroup,
+    removeAnimeFromGroup,
     getGroupsByUserId,
     getGroupById,
+    loading,
   }
 
   return (

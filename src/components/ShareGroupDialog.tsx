@@ -33,9 +33,9 @@ export function ShareGroupDialog({ open, onOpenChange, groupId, groupName }: Sha
     return `${window.location.origin}/shared/${token}`
   }
 
-  const handleGenerateAndCopy = () => {
+  const handleGenerateAndCopy = async () => {
     if (!activeUserId) return
-    const token = existingToken ?? createToken(activeUserId, groupId)
+    const token = existingToken ?? await createToken(activeUserId, groupId)
     const url = getShareUrl(token)
     navigator.clipboard.writeText(url)
     setCopied(true)

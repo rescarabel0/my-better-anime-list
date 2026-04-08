@@ -13,7 +13,7 @@ import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
-import { TrendingUp, Menu, Users } from 'lucide-react'
+import { TrendingUp, Menu, Users, FolderOpen } from 'lucide-react'
 import { useUser } from '@/contexts/UserContext'
 
 export const Route = createRootRoute({
@@ -49,6 +49,14 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         >
           <TrendingUp className="h-4 w-4" />
           {t('nav.topAnimes')}
+        </Link>
+        <Link
+          to="/groups/"
+          className="flex items-center gap-2 rounded-md px-3 py-2 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors cursor-pointer [&.active]:text-foreground [&.active]:bg-accent [&.active]:font-medium"
+          onClick={onNavigate}
+        >
+          <FolderOpen className="h-4 w-4" />
+          {t('nav.myCollections')}
         </Link>
 
         <Separator className="my-2" />
@@ -117,8 +125,16 @@ function ProfileCreationGate() {
 
 function RootLayout() {
   const { t } = useTranslation()
-  const { activeUser } = useUser()
+  const { activeUser, loading } = useUser()
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Logo className="h-10 w-10 animate-pulse" />
+      </div>
+    )
+  }
 
   if (!activeUser) {
     return <ProfileCreationGate />

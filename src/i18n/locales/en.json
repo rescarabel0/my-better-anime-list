@@ -3,6 +3,7 @@
     "topAnimes": "Top Animes",
     "brand": "MyBetterAnimeList",
     "collections": "Collections",
+    "myCollections": "My Collections",
     "users": "Users"
   },
   "theme": {
@@ -70,7 +71,10 @@
     "removeFromGroup": "Remove from collection",
     "addToGroup": "Add to collection",
     "newGroup": "New collection...",
-    "confirmDelete": "Confirm"
+    "confirmDelete": "Confirm",
+    "animeCount": "{{count}} anime(s)",
+    "myCollectionsPage": "Your anime collections",
+    "ownedBy": "Collection by {{name}}"
   },
   "selection": {
     "selected": "{{count}} selected",
@@ -100,7 +104,8 @@
     "notFound": "User not found.",
     "viewGroup": "View all",
     "showAll": "Show all ({{count}})",
-    "showLess": "Show less"
+    "showLess": "Show less",
+    "nameTaken": "This username is already taken."
   },
   "share": {
     "share": "Share",
