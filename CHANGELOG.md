@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.16](https://github.com/rescarabel0/my-better-anime-list/compare/v0.0.15...v0.0.16) (2026-04-08)
+
+
+### Features
+
+* add json-server backend, collections page, cross-user group viewing ([c6abffd](https://github.com/rescarabel0/my-better-anime-list/commit/c6abffd20218f745d3f24d3ea13c325bb623e8af))
+
 ### [0.0.15](https://github.com/rescarabel0/my-better-anime-list/compare/v0.0.14...v0.0.15) (2026-04-08)
 
 
