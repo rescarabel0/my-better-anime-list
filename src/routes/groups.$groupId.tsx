@@ -326,9 +326,9 @@ function GroupAnimeCard({ anime, variant, selected, selectionMode, onToggleSelec
     }
   }
 
-  const checkbox = (
+  const checkbox = (position: 'top-left' | 'center-right') => (
     <div
-      className={`absolute top-2 left-2 z-20 transition-opacity cursor-pointer ${checkboxVisible ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+      className={`absolute z-20 transition-opacity cursor-pointer ${position === 'center-right' ? 'top-1/2 -translate-y-1/2 right-2' : 'top-2 left-2'} ${checkboxVisible ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
       onClick={handleCheckboxClick}
     >
       <div className={`size-6 rounded-md border-2 flex items-center justify-center backdrop-blur-sm transition-colors ${selected ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/60 bg-background/80'}`}>
@@ -351,7 +351,7 @@ function GroupAnimeCard({ anime, variant, selected, selectionMode, onToggleSelec
   if (variant === 'list') {
     return (
       <div className="relative group">
-        {checkbox}
+        {checkbox('center-right')}
         {removeButton}
         <Link to="/anime/$id" params={{ id: String(anime.mal_id) }} onClick={handleLinkClick}>
           <Card className={`overflow-hidden hover:shadow-md transition-shadow cursor-pointer py-0 gap-0 flex-row h-28 ${selected ? 'ring-2 ring-primary' : ''}`}>
@@ -389,7 +389,7 @@ function GroupAnimeCard({ anime, variant, selected, selectionMode, onToggleSelec
 
   return (
     <div className="relative group">
-      {checkbox}
+      {checkbox('top-left')}
       {removeButton}
       <Link to="/anime/$id" params={{ id: String(anime.mal_id) }} onClick={handleLinkClick}>
         <Card className={`overflow-hidden h-full hover:shadow-md transition-shadow cursor-pointer pt-0 gap-0 ${selected ? 'ring-2 ring-primary' : ''}`}>

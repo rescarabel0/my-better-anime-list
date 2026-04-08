@@ -1,17 +1,18 @@
 import { Link } from '@tanstack/react-router'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
+import { Check } from 'lucide-react'
 import type { Anime } from '@/types/anime'
 
 interface AnimeCardProps {
   anime: Anime
   variant?: 'grid' | 'list'
   selected?: boolean
+  selectionMode?: boolean
   onToggleSelect?: (anime: Anime) => void
 }
 
-export function AnimeCard({ anime, variant = 'grid', selected, onToggleSelect }: AnimeCardProps) {
+export function AnimeCard({ anime, variant = 'grid', selected, selectionMode, onToggleSelect }: AnimeCardProps) {
   const title = anime.title_english ?? anime.title
   const subtitle = anime.title_english ? anime.title : null
 
@@ -21,21 +22,40 @@ export function AnimeCard({ anime, variant = 'grid', selected, onToggleSelect }:
     onToggleSelect?.(anime)
   }
 
+  const handleLinkClick = (e: React.MouseEvent) => {
+    if (selectionMode) {
+      e.preventDefault()
+      onToggleSelect?.(anime)
+    }
+  }
+
+  const checkboxVisible = selectionMode || selected
+
+  const checkbox = onToggleSelect ? (
+    <div
+      className={`absolute top-2 left-2 z-20 transition-opacity cursor-pointer ${checkboxVisible ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+      onClick={handleCheckboxClick}
+    >
+      <div className={`size-6 rounded-md border-2 flex items-center justify-center backdrop-blur-sm transition-colors ${selected ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/60 bg-background/80'}`}>
+        {selected && <Check className="size-4" strokeWidth={3} />}
+      </div>
+    </div>
+  ) : null
+
   if (variant === 'list') {
     return (
       <div className="relative group">
         {onToggleSelect && (
           <div
-            className={`absolute top-1/2 -translate-y-1/2 left-2 z-20 transition-opacity ${selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+            className={`absolute top-1/2 -translate-y-1/2 right-2 z-20 transition-opacity cursor-pointer ${checkboxVisible ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
             onClick={handleCheckboxClick}
           >
-            <Checkbox
-              checked={selected ?? false}
-              className="bg-background/80 backdrop-blur-sm"
-            />
+            <div className={`size-6 rounded-md border-2 flex items-center justify-center backdrop-blur-sm transition-colors ${selected ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/60 bg-background/80'}`}>
+              {selected && <Check className="size-4" strokeWidth={3} />}
+            </div>
           </div>
         )}
-        <Link to="/anime/$id" params={{ id: String(anime.mal_id) }}>
+        <Link to="/anime/$id" params={{ id: String(anime.mal_id) }} onClick={handleLinkClick}>
           <Card className={`overflow-hidden hover:shadow-md transition-shadow cursor-pointer py-0 gap-0 flex-row h-28 ${selected ? 'ring-2 ring-primary' : ''}`}>
             <div className="w-20 shrink-0 overflow-hidden bg-muted">
               <img
@@ -71,18 +91,8 @@ export function AnimeCard({ anime, variant = 'grid', selected, onToggleSelect }:
 
   return (
     <div className="relative group">
-      {onToggleSelect && (
-        <div
-          className={`absolute top-2 left-2 z-20 transition-opacity ${selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
-          onClick={handleCheckboxClick}
-        >
-          <Checkbox
-            checked={selected ?? false}
-            className="bg-background/80 backdrop-blur-sm"
-          />
-        </div>
-      )}
-      <Link to="/anime/$id" params={{ id: String(anime.mal_id) }}>
+      {checkbox}
+      <Link to="/anime/$id" params={{ id: String(anime.mal_id) }} onClick={handleLinkClick}>
         <Card className={`overflow-hidden h-full hover:shadow-md transition-shadow cursor-pointer pt-0 gap-0 ${selected ? 'ring-2 ring-primary' : ''}`}>
           <div className="aspect-[2/3] overflow-hidden bg-muted">
             <img
