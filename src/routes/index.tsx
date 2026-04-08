@@ -350,7 +350,7 @@ function HomePage() {
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto min-h-0">
         <div className={viewMode === 'grid'
           ? "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-3 p-1 pb-4 pr-3"
-          : "flex flex-col gap-3 p-1 pb-4 pr-3"
+          : "grid grid-cols-1 md:grid-cols-2 gap-3 p-1 pb-4 pr-3"
         }>
           {loading
             ? Array.from({ length: 24 }).map((_, i) => <AnimeCardSkeleton key={i} variant={viewMode} />)

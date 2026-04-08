@@ -36,7 +36,7 @@ export function AnimeCard({ anime, variant = 'grid', selected, selectionMode, on
       className={`absolute top-2 left-2 z-20 transition-opacity cursor-pointer ${checkboxVisible ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
       onClick={handleCheckboxClick}
     >
-      <div className={`size-6 rounded-md border-2 flex items-center justify-center backdrop-blur-sm transition-colors ${selected ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/60 bg-background/80'}`}>
+      <div className={`size-6 rounded-md border-2 flex items-center justify-center backdrop-blur-sm transition-colors ${selected ? 'border-primary bg-primary text-primary-foreground hover:bg-primary/80' : 'border-muted-foreground/60 bg-background/80 hover:border-primary hover:bg-primary/10'}`}>
         {selected && <Check className="size-4" strokeWidth={3} />}
       </div>
     </div>
@@ -50,7 +50,7 @@ export function AnimeCard({ anime, variant = 'grid', selected, selectionMode, on
             className={`absolute top-1/2 -translate-y-1/2 right-2 z-20 transition-opacity cursor-pointer ${checkboxVisible ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
             onClick={handleCheckboxClick}
           >
-            <div className={`size-6 rounded-md border-2 flex items-center justify-center backdrop-blur-sm transition-colors ${selected ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/60 bg-background/80'}`}>
+            <div className={`size-6 rounded-md border-2 flex items-center justify-center backdrop-blur-sm transition-colors ${selected ? 'border-primary bg-primary text-primary-foreground hover:bg-primary/80' : 'border-muted-foreground/60 bg-background/80 hover:border-primary hover:bg-primary/10'}`}>
               {selected && <Check className="size-4" strokeWidth={3} />}
             </div>
           </div>

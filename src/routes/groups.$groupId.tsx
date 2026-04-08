@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LayoutGrid, List, X, Check, SlidersHorizontal, Link2, Copy } from 'lucide-react'
+import { LayoutGrid, List, Check, SlidersHorizontal, Link2, Copy, Trash2 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -344,10 +344,10 @@ function GroupPage() {
           {rawAnimes.length === 0 && <p className="text-xs">{t('groups.emptyHint')}</p>}
         </div>
       ) : (
-        <div className="flex-1 overflow-y-auto min-h-0 pr-3">
+        <div className="flex-1 overflow-y-auto min-h-0">
           <div className={viewMode === 'grid'
-            ? "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-3"
-            : "grid grid-cols-1 md:grid-cols-2 gap-3"
+            ? "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-3 p-1 pb-4 pr-3"
+            : "grid grid-cols-1 md:grid-cols-2 gap-3 p-1 pb-4 pr-3"
           }>
             {animes.map((anime) => (
               <GroupAnimeCard
@@ -414,19 +414,19 @@ function GroupAnimeCard({ anime, variant, selected, selectionMode, onToggleSelec
       className={`absolute z-20 transition-opacity cursor-pointer ${position === 'center-right' ? 'top-1/2 -translate-y-1/2 right-2' : 'top-2 left-2'} ${checkboxVisible ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
       onClick={handleCheckboxClick}
     >
-      <div className={`size-6 rounded-md border-2 flex items-center justify-center backdrop-blur-sm transition-colors ${selected ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/60 bg-background/80'}`}>
+      <div className={`size-6 rounded-md border-2 flex items-center justify-center backdrop-blur-sm transition-colors ${selected ? 'border-primary bg-primary text-primary-foreground hover:bg-primary/80' : 'border-muted-foreground/60 bg-background/80 hover:border-primary hover:bg-primary/10'}`}>
         {selected && <Check className="size-4" strokeWidth={3} />}
       </div>
     </div>
   )
 
-  const removeButton = onRemove ? (
+  const removeButton = (position: 'top-left' | 'center-right') => onRemove ? (
     <div
-      className="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+      className={`absolute z-20 transition-opacity cursor-pointer ${position === 'center-right' ? 'top-1/2 -translate-y-1/2 right-10' : 'top-2 left-10'} ${checkboxVisible ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
       onClick={handleRemoveClick}
     >
-      <div className="size-6 rounded-full bg-destructive/90 text-destructive-foreground flex items-center justify-center backdrop-blur-sm">
-        <X className="h-3.5 w-3.5" />
+      <div className="size-6 rounded-md flex items-center justify-center backdrop-blur-sm text-muted-foreground hover:text-destructive transition-colors">
+        <Trash2 className="size-4" />
       </div>
     </div>
   ) : null
@@ -435,7 +435,7 @@ function GroupAnimeCard({ anime, variant, selected, selectionMode, onToggleSelec
     return (
       <div className="relative group">
         {checkbox('center-right')}
-        {removeButton}
+        {removeButton('center-right')}
         <Link to="/anime/$id" params={{ id: String(anime.mal_id) }} onClick={handleLinkClick}>
           <Card className={`overflow-hidden hover:shadow-md transition-shadow cursor-pointer py-0 gap-0 flex-row h-28 ${selected ? 'ring-2 ring-primary' : ''}`}>
             <div className="w-20 shrink-0 overflow-hidden bg-muted">
@@ -473,7 +473,7 @@ function GroupAnimeCard({ anime, variant, selected, selectionMode, onToggleSelec
   return (
     <div className="relative group">
       {checkbox('top-left')}
-      {removeButton}
+      {removeButton('top-left')}
       <Link to="/anime/$id" params={{ id: String(anime.mal_id) }} onClick={handleLinkClick}>
         <Card className={`overflow-hidden h-full hover:shadow-md transition-shadow cursor-pointer pt-0 gap-0 ${selected ? 'ring-2 ring-primary' : ''}`}>
           <div className="aspect-[2/3] overflow-hidden bg-muted">
