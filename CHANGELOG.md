@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.15](https://github.com/rescarabel0/my-better-anime-list/compare/v0.0.14...v0.0.15) (2026-04-08)
+
+
+### Features
+
+* add group sharing via generated link and share option in sidebar ([4e37c7f](https://github.com/rescarabel0/my-better-anime-list/commit/4e37c7f3186a84e0f58e41bd79e1e65697165a21))
+* add user profiles with avatar, bio, and profile management ([db30a3d](https://github.com/rescarabel0/my-better-anime-list/commit/db30a3d2bfeab8a454be7caa7b9fda3c1471cb9d))
+
+
+### Bug Fixes
+
+* align skeleton cards with anime card layout and minor UI polish ([dfa7cd8](https://github.com/rescarabel0/my-better-anime-list/commit/dfa7cd8dc3b077be4027c4a56d633ef135505d75))
+
 ### [0.0.14](https://github.com/rescarabel0/my-better-anime-list/compare/v0.0.13...v0.0.14) (2026-04-08)
 
 
