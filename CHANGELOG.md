@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.17](https://github.com/rescarabel0/my-better-anime-list/compare/v0.0.16...v0.0.17) (2026-04-08)
+
+
+### Features
+
+* improve list view and card interactions ([a5441c8](https://github.com/rescarabel0/my-better-anime-list/commit/a5441c81b310a5fba6577834a8f2590c5735bb87))
+
 ### [0.0.16](https://github.com/rescarabel0/my-better-anime-list/compare/v0.0.15...v0.0.16) (2026-04-08)
 
 
