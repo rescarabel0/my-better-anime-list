@@ -12,6 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GroupsGroupIdRouteImport } from './routes/groups.$groupId'
 import { Route as AnimeIdRouteImport } from './routes/anime.$id'
+import { Route as ProfileIndexRouteImport } from './routes/profile.index'
+import { Route as ProfileUserIdRouteImport } from './routes/profile.$userId'
+import { Route as SharedTokenRouteImport } from './routes/shared.$token'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +31,62 @@ const AnimeIdRoute = AnimeIdRouteImport.update({
   path: '/anime/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileIndexRoute = ProfileIndexRouteImport.update({
+  id: '/profile/',
+  path: '/profile/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileUserIdRoute = ProfileUserIdRouteImport.update({
+  id: '/profile/$userId',
+  path: '/profile/$userId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SharedTokenRoute = SharedTokenRouteImport.update({
+  id: '/shared/$token',
+  path: '/shared/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/anime/$id': typeof AnimeIdRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
+  '/profile/': typeof ProfileIndexRoute
+  '/profile/$userId': typeof ProfileUserIdRoute
+  '/shared/$token': typeof SharedTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/anime/$id': typeof AnimeIdRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
+  '/profile/': typeof ProfileIndexRoute
+  '/profile/$userId': typeof ProfileUserIdRoute
+  '/shared/$token': typeof SharedTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/anime/$id': typeof AnimeIdRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
+  '/profile/': typeof ProfileIndexRoute
+  '/profile/$userId': typeof ProfileUserIdRoute
+  '/shared/$token': typeof SharedTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/anime/$id' | '/groups/$groupId'
+  fullPaths: '/' | '/anime/$id' | '/groups/$groupId' | '/profile/' | '/profile/$userId' | '/shared/$token'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/anime/$id' | '/groups/$groupId'
-  id: '__root__' | '/' | '/anime/$id' | '/groups/$groupId'
+  to: '/' | '/anime/$id' | '/groups/$groupId' | '/profile/' | '/profile/$userId' | '/shared/$token'
+  id: '__root__' | '/' | '/anime/$id' | '/groups/$groupId' | '/profile/' | '/profile/$userId' | '/shared/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnimeIdRoute: typeof AnimeIdRoute
   GroupsGroupIdRoute: typeof GroupsGroupIdRoute
+  ProfileIndexRoute: typeof ProfileIndexRoute
+  ProfileUserIdRoute: typeof ProfileUserIdRoute
+  SharedTokenRoute: typeof SharedTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +112,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnimeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile/': {
+      id: '/profile/'
+      path: '/profile'
+      fullPath: '/profile/'
+      preLoaderRoute: typeof ProfileIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile/$userId': {
+      id: '/profile/$userId'
+      path: '/profile/$userId'
+      fullPath: '/profile/$userId'
+      preLoaderRoute: typeof ProfileUserIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shared/$token': {
+      id: '/shared/$token'
+      path: '/shared/$token'
+      fullPath: '/shared/$token'
+      preLoaderRoute: typeof SharedTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +140,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnimeIdRoute: AnimeIdRoute,
   GroupsGroupIdRoute: GroupsGroupIdRoute,
+  ProfileIndexRoute: ProfileIndexRoute,
+  ProfileUserIdRoute: ProfileUserIdRoute,
+  SharedTokenRoute: SharedTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

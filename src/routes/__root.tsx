@@ -5,11 +5,16 @@ import { useState } from 'react'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { GroupSidebar } from '@/components/GroupSidebar'
+import { UserSwitcher } from '@/components/UserSwitcher'
+import { ProfileForm } from '@/components/ProfileForm'
+import { AvatarDisplay } from '@/components/AvatarDisplay'
 import { Logo } from '@/components/Logo'
 import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
-import { TrendingUp, Menu } from 'lucide-react'
+import { TrendingUp, Menu, Users } from 'lucide-react'
+import { useUser } from '@/contexts/UserContext'
 
 export const Route = createRootRoute({
   component: RootLayout,
@@ -17,6 +22,9 @@ export const Route = createRootRoute({
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { t } = useTranslation()
+  const { allUsers, activeUser } = useUser()
+
+  const otherUsers = allUsers.filter((u) => u.id !== activeUser?.id)
 
   return (
     <>
@@ -46,9 +54,35 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <Separator className="my-2" />
 
         <GroupSidebar onNavigate={onNavigate} />
+
+        {otherUsers.length > 0 && (
+          <>
+            <Separator className="my-2" />
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-3">
+                <Users className="h-3 w-3 inline mr-1" />
+                {t('nav.users')}
+              </span>
+              {otherUsers.map((user) => (
+                <Link
+                  key={user.id}
+                  to="/profile/$userId"
+                  params={{ userId: user.id }}
+                  className="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors cursor-pointer [&.active]:text-foreground [&.active]:bg-accent [&.active]:font-medium"
+                  onClick={onNavigate}
+                >
+                  <AvatarDisplay name={user.name} avatarUrl={user.avatarUrl} size="sm" />
+                  <span className="truncate">{user.name}</span>
+                </Link>
+              ))}
+            </div>
+          </>
+        )}
       </nav>
 
       <div className="border-t p-3 flex flex-col gap-2 shrink-0">
+        <UserSwitcher onNavigate={onNavigate} />
+        <Separator />
         <LanguageSwitcher />
         <ThemeToggle />
       </div>
@@ -56,9 +90,39 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   )
 }
 
+function ProfileCreationGate() {
+  const { t } = useTranslation()
+  const { createUser } = useUser()
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <div className="flex justify-center mb-2">
+            <Logo className="h-12 w-12" />
+          </div>
+          <CardTitle>{t('profile.welcome')}</CardTitle>
+          <CardDescription>{t('profile.welcomeDescription')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ProfileForm
+            onSubmit={(name, bio, avatarUrl) => createUser(name, bio, avatarUrl)}
+            submitLabel={t('profile.getStarted')}
+          />
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
 function RootLayout() {
   const { t } = useTranslation()
+  const { activeUser } = useUser()
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
+
+  if (!activeUser) {
+    return <ProfileCreationGate />
+  }
 
   return (
     <div className="h-screen flex flex-col md:flex-row bg-background">

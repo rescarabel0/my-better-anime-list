@@ -1,22 +1,50 @@
-import { createContext, useContext, useReducer, useEffect, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useReducer, useEffect, useCallback, useMemo, type ReactNode } from 'react'
 import type { AnimeGroupEntry, AnimeGroup, GroupsStorage } from '@/types/groups'
+import type { UserStorage } from '@/types/user'
+import { useUser } from '@/contexts/UserContext'
 
 const STORAGE_KEY = 'anime-groups'
+const USERS_KEY = 'anime-users'
 
-const DEFAULT_GROUPS: AnimeGroup[] = [
-  { id: 'watched', name: 'watched', isDefault: true, animeIds: [], createdAt: new Date().toISOString() },
-  { id: 'want-to-watch', name: 'wantToWatch', isDefault: true, animeIds: [], createdAt: new Date().toISOString() },
-]
-
-function loadGroups(): GroupsStorage {
+function migrateAndLoad(): GroupsStorage {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const parsed = JSON.parse(raw) as GroupsStorage
-      if (parsed.groups && parsed.animeCache) return parsed
+      if (parsed.groups && parsed.animeCache) {
+        const needsMigration = parsed.groups.some((g) => !g.userId)
+        if (needsMigration) {
+          const usersRaw = localStorage.getItem(USERS_KEY)
+          let userId: string
+
+          if (usersRaw) {
+            const usersData = JSON.parse(usersRaw) as UserStorage
+            userId = usersData.activeUserId ?? Object.keys(usersData.users)[0] ?? crypto.randomUUID()
+          } else {
+            userId = crypto.randomUUID()
+            const userStorage: UserStorage = {
+              users: {
+                [userId]: {
+                  id: userId,
+                  name: 'User',
+                  bio: '',
+                  avatarUrl: '',
+                  createdAt: new Date().toISOString(),
+                },
+              },
+              activeUserId: userId,
+            }
+            localStorage.setItem(USERS_KEY, JSON.stringify(userStorage))
+          }
+
+          parsed.groups = parsed.groups.map((g) => ({ ...g, userId: g.userId || userId }))
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed))
+        }
+        return parsed
+      }
     }
   } catch { /* ignore */ }
-  return { groups: DEFAULT_GROUPS, animeCache: {} }
+  return { groups: [], animeCache: {} }
 }
 
 function saveGroups(state: GroupsStorage) {
@@ -76,11 +104,12 @@ const SelectionContext = createContext<SelectionContextValue | null>(null)
 // --- Groups Context ---
 
 type GroupsAction =
-  | { type: 'CREATE_GROUP'; name: string }
+  | { type: 'CREATE_GROUP'; name: string; userId: string }
   | { type: 'DELETE_GROUP'; groupId: string }
   | { type: 'RENAME_GROUP'; groupId: string; name: string }
   | { type: 'ADD_ANIMES'; groupId: string; entries: AnimeGroupEntry[] }
   | { type: 'REMOVE_ANIME'; groupId: string; malId: number }
+  | { type: 'ENSURE_DEFAULTS'; userId: string }
 
 function groupsReducer(state: GroupsStorage, action: GroupsAction): GroupsStorage {
   switch (action.type) {
@@ -91,6 +120,7 @@ function groupsReducer(state: GroupsStorage, action: GroupsAction): GroupsStorag
         isDefault: false,
         animeIds: [],
         createdAt: new Date().toISOString(),
+        userId: action.userId,
       }
       return { ...state, groups: [...state.groups, newGroup] }
     }
@@ -130,6 +160,34 @@ function groupsReducer(state: GroupsStorage, action: GroupsAction): GroupsStorag
         ),
       }
     }
+    case 'ENSURE_DEFAULTS': {
+      const userGroups = state.groups.filter((g) => g.userId === action.userId)
+      const hasWatched = userGroups.some((g) => g.name === 'watched' && g.isDefault)
+      const hasWantToWatch = userGroups.some((g) => g.name === 'wantToWatch' && g.isDefault)
+      if (hasWatched && hasWantToWatch) return state
+      const newGroups = [...state.groups]
+      if (!hasWatched) {
+        newGroups.push({
+          id: `watched-${action.userId}`,
+          name: 'watched',
+          isDefault: true,
+          animeIds: [],
+          createdAt: new Date().toISOString(),
+          userId: action.userId,
+        })
+      }
+      if (!hasWantToWatch) {
+        newGroups.push({
+          id: `want-to-watch-${action.userId}`,
+          name: 'wantToWatch',
+          isDefault: true,
+          animeIds: [],
+          createdAt: new Date().toISOString(),
+          userId: action.userId,
+        })
+      }
+      return { ...state, groups: newGroups }
+    }
     default:
       return state
   }
@@ -137,12 +195,15 @@ function groupsReducer(state: GroupsStorage, action: GroupsAction): GroupsStorag
 
 interface GroupsContextValue {
   groups: AnimeGroup[]
+  allGroups: AnimeGroup[]
   animeCache: Record<number, AnimeGroupEntry>
   createGroup: (name: string) => void
   deleteGroup: (groupId: string) => void
   renameGroup: (groupId: string, name: string) => void
   addAnimesToGroup: (groupId: string, entries: AnimeGroupEntry[]) => void
   removeAnimeFromGroup: (groupId: string, malId: number) => void
+  getGroupsByUserId: (userId: string) => AnimeGroup[]
+  getGroupById: (groupId: string) => AnimeGroup | undefined
 }
 
 const GroupsContext = createContext<GroupsContextValue | null>(null)
@@ -150,12 +211,19 @@ const GroupsContext = createContext<GroupsContextValue | null>(null)
 // --- Provider ---
 
 export function GroupsProvider({ children }: { children: ReactNode }) {
+  const { activeUserId } = useUser()
   const [selection, selectionDispatch] = useReducer(selectionReducer, { selected: new Map() })
-  const [groupsState, groupsDispatch] = useReducer(groupsReducer, undefined, loadGroups)
+  const [groupsState, groupsDispatch] = useReducer(groupsReducer, undefined, migrateAndLoad)
 
   useEffect(() => {
     saveGroups(groupsState)
   }, [groupsState])
+
+  useEffect(() => {
+    if (activeUserId) {
+      groupsDispatch({ type: 'ENSURE_DEFAULTS', userId: activeUserId })
+    }
+  }, [activeUserId])
 
   const selectionValue: SelectionContextValue = {
     selected: selection.selected,
@@ -165,14 +233,34 @@ export function GroupsProvider({ children }: { children: ReactNode }) {
     clearSelection: useCallback(() => selectionDispatch({ type: 'CLEAR' }), []),
   }
 
+  const userGroups = useMemo(
+    () => activeUserId ? groupsState.groups.filter((g) => g.userId === activeUserId) : [],
+    [groupsState.groups, activeUserId],
+  )
+
+  const getGroupsByUserId = useCallback(
+    (userId: string) => groupsState.groups.filter((g) => g.userId === userId),
+    [groupsState.groups],
+  )
+
+  const getGroupById = useCallback(
+    (groupId: string) => groupsState.groups.find((g) => g.id === groupId),
+    [groupsState.groups],
+  )
+
   const groupsValue: GroupsContextValue = {
-    groups: groupsState.groups,
+    groups: userGroups,
+    allGroups: groupsState.groups,
     animeCache: groupsState.animeCache,
-    createGroup: useCallback((name) => groupsDispatch({ type: 'CREATE_GROUP', name }), []),
+    createGroup: useCallback((name) => {
+      if (activeUserId) groupsDispatch({ type: 'CREATE_GROUP', name, userId: activeUserId })
+    }, [activeUserId]),
     deleteGroup: useCallback((groupId) => groupsDispatch({ type: 'DELETE_GROUP', groupId }), []),
     renameGroup: useCallback((groupId, name) => groupsDispatch({ type: 'RENAME_GROUP', groupId, name }), []),
     addAnimesToGroup: useCallback((groupId, entries) => groupsDispatch({ type: 'ADD_ANIMES', groupId, entries }), []),
     removeAnimeFromGroup: useCallback((groupId, malId) => groupsDispatch({ type: 'REMOVE_ANIME', groupId, malId }), []),
+    getGroupsByUserId,
+    getGroupById,
   }
 
   return (

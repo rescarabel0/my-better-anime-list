@@ -14,6 +14,7 @@ export interface AnimeGroup {
   isDefault: boolean
   animeIds: number[]
   createdAt: string
+  userId: string
 }
 
 export interface GroupsStorage {

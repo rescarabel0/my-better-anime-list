@@ -22,6 +22,12 @@ export interface Anime {
   studios: Array<{ mal_id: number; name: string }>
 }
 
+export interface Genre {
+  mal_id: number
+  name: string
+  count: number
+}
+
 export interface JikanPagination {
   last_visible_page: number
   has_next_page: boolean

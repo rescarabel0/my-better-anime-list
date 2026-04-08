@@ -2,7 +2,8 @@
   "nav": {
     "topAnimes": "Top Animes",
     "brand": "MyBetterAnimeList",
-    "collections": "Coleções"
+    "collections": "Coleções",
+    "users": "Usuários"
   },
   "theme": {
     "toggle": "Alternar tema",
@@ -75,5 +76,42 @@
     "selected": "{{count}} selecionado(s)",
     "clearSelection": "Limpar",
     "addToGroup": "Adicionar à coleção"
+  },
+  "profile": {
+    "welcome": "Bem-vindo!",
+    "welcomeDescription": "Crie seu perfil para começar.",
+    "getStarted": "Começar",
+    "name": "Nome",
+    "namePlaceholder": "Seu nome",
+    "bio": "Bio",
+    "bioPlaceholder": "Conte sobre você...",
+    "avatarUrlPlaceholder": "URL da imagem de perfil (opcional)",
+    "save": "Salvar",
+    "myProfile": "Meu Perfil",
+    "editProfile": "Editar Perfil",
+    "editDescription": "Atualize suas informações de perfil.",
+    "createNew": "Novo Perfil",
+    "createDescription": "Crie um novo perfil para gerenciar coleções separadas.",
+    "create": "Criar",
+    "memberSince": "Membro desde {{date}}",
+    "myGroups": "Minhas Coleções",
+    "userGroups": "Coleções de {{name}}",
+    "noGroups": "Nenhuma coleção ainda.",
+    "notFound": "Usuário não encontrado.",
+    "viewGroup": "Ver todas",
+    "showAll": "Ver todas ({{count}})",
+    "showLess": "Ver menos"
+  },
+  "share": {
+    "share": "Compartilhar",
+    "title": "Compartilhar Coleção",
+    "description": "Compartilhe \"{{name}}\" com um link.",
+    "generateLink": "Gerar link",
+    "localOnly": "Este link funciona apenas neste dispositivo. Compartilhamento entre dispositivos em breve.",
+    "sharedBy": "Compartilhado por",
+    "notFound": "Este link compartilhado não é válido ou expirou.",
+    "groupDeleted": "Esta coleção foi excluída.",
+    "copyToCollection": "Copiar para minha coleção",
+    "copyNewGroupDescription": "Criar nova coleção com {{count}} anime(s)."
   }
 }
