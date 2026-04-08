@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.12](https://github.com/rescarabel0/my-better-anime-list/compare/v0.0.11...v0.0.12) (2026-04-08)
+
+
+### Features
+
+* add pictures gallery to anime detail page ([13981e7](https://github.com/rescarabel0/my-better-anime-list/commit/13981e7a721badb027d4a50aa402c6c35186abbf))
+
 ### [0.0.11](https://github.com/rescarabel0/my-better-anime-list/compare/v0.0.10...v0.0.11) (2026-04-08)
 
 ### [0.0.10](https://github.com/rescarabel0/my-better-anime-list/compare/v0.0.9...v0.0.10) (2026-04-07)
